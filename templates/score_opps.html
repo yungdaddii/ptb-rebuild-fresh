@@ -17,7 +17,7 @@
                     </div>
                 </div>
             </div>
-            <!-- Tiles/Card Widget (uses all_opportunities) -->
+            <!-- Tiles/Card Widget -->
             <div class="row">
                 <div class="col-xl-12">
                     <div class="card crm-widget">
@@ -35,7 +35,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                </div><!-- end col -->
+                                </div>
                                 <div class="col">
                                     <div class="mt-3 mt-md-0 py-4 px-3">
                                         <h5 class="text-muted text-uppercase fs-13">Total Amount <i class="ri-arrow-up-circle-line text-success fs-18 float-end align-middle"></i></h5>
@@ -48,7 +48,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                </div><!-- end col -->
+                                </div>
                                 <div class="col">
                                     <div class="mt-3 mt-md-0 py-4 px-3">
                                         <h5 class="text-muted text-uppercase fs-13">Avg Propensity Score <i class="ri-arrow-down-circle-line text-danger fs-18 float-end align-middle"></i></h5>
@@ -61,7 +61,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                </div><!-- end col -->
+                                </div>
                                 <div class="col">
                                     <div class="mt-3 mt-lg-0 py-4 px-3">
                                         <h5 class="text-muted text-uppercase fs-13">Avg Win Probability <i class="ri-arrow-up-circle-line text-success fs-18 float-end align-middle"></i></h5>
@@ -74,7 +74,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                </div><!-- end col -->
+                                </div>
                                 <div class="col">
                                     <div class="mt-3 mt-lg-0 py-4 px-3">
                                         <h5 class="text-muted text-uppercase fs-13">Top Priority Deals <i class="ri-arrow-up-circle-line text-success fs-18 float-end align-middle"></i></h5>
@@ -87,13 +87,81 @@
                                             </div>
                                         </div>
                                     </div>
-                                </div><!-- end col -->
-                            </div><!-- end row -->
-                        </div><!-- end card body -->
-                    </div><!-- end card -->
-                </div><!-- end col -->
-            </div><!-- end row -->
-            <!-- Table with Pagination (uses opportunities) -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Charts -->
+            <div class="row">
+                <div class="col-xl-6">
+                    <div class="card">
+                        <div class="card-header align-items-center d-flex">
+                            <h4 class="card-title mb-0 flex-grow-1">Total Pipeline by Stage</h4>
+                        </div>
+                        <div class="card-body">
+                            <div id="pipeline_by_stage_chart" class="apex-charts" dir="ltr"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-6">
+                    <div class="card">
+                        <div class="card-header align-items-center d-flex">
+                            <h4 class="card-title mb-0 flex-grow-1">Total Closed Won</h4>
+                        </div>
+                        <div class="card-body">
+                            <div id="closed_won_chart" class="apex-charts" dir="ltr"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xl-6">
+                    <div class="card">
+                        <div class="card-header align-items-center d-flex">
+                            <h4 class="card-title mb-0 flex-grow-1">Top Priority Opportunities</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive table-card">
+                                <table class="table table-borderless table-hover table-nowrap align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr class="text-muted">
+                                            <th scope="col">Name</th>
+                                            <th scope="col" style="width: 20%;">Close Date</th>
+                                            <th scope="col">Stage</th>
+                                            <th scope="col" style="width: 16%;">Priority</th>
+                                            <th scope="col" style="width: 12%;">Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for opp in all_opportunities if opp['Priority_Level__c'] == 'Top' %}
+                                        <tr>
+                                            <td>{{ opp['Name'] }}</td>
+                                            <td>{{ opp['CloseDate']|datetimeformat }}</td>
+                                            <td>{{ opp['StageName'] }}</td>
+                                            <td><span class="badge badge-soft-success p-2">{{ opp['Priority_Level__c'] }}</span></td>
+                                            <td>${{ opp['Amount']|int|format_number }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-6">
+                    <div class="card">
+                        <div class="card-header align-items-center d-flex">
+                            <h4 class="card-title mb-0 flex-grow-1">Pipeline Set to Close This FY</h4>
+                        </div>
+                        <div class="card-body">
+                            <div id="pipeline_by_close_date_chart" class="apex-charts" dir="ltr"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Paginated Table -->
             <div class="row">
                 <div class="col-xl-12">
                     <div class="card">
@@ -178,4 +246,46 @@
 {% block extra_js %}
 <script src="{{ url_for('static', filename='libs/apexcharts/dist/apexcharts.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/pages/dashboard-crm.init.js') }}"></script>
+<script>
+    // Total Pipeline by Stage (Line Chart)
+    var pipelineOptions = {
+        chart: { type: 'line', height: 350 },
+        series: [{ name: 'Amount', data: {{ pipeline_values | safe }} }],
+        xaxis: { categories: {{ stages | tojson | safe }} },
+        colors: ['#5156be'],
+        stroke: { curve: 'smooth' },
+        title: { text: 'Total Pipeline by Stage', align: 'left' },
+        dataLabels: { enabled: true },
+        tooltip: { y: { formatter: function(val) { return '$' + val.toLocaleString(); } } }
+    };
+    var pipelineChart = new ApexCharts(document.querySelector("#pipeline_by_stage_chart"), pipelineOptions);
+    pipelineChart.render();
+
+    // Total Closed Won (Bar Chart)
+    var closedWonOptions = {
+        chart: { type: 'bar', height: 350 },
+        series: [{ name: 'Closed Won Amount', data: [{{ closed_won_total }}] }],
+        xaxis: { categories: ['Closed Won'] },
+        colors: ['#34c38f'],
+        title: { text: 'Total Closed Won', align: 'left' },
+        dataLabels: { enabled: true },
+        tooltip: { y: { formatter: function(val) { return '$' + val.toLocaleString(); } } }
+    };
+    var closedWonChart = new ApexCharts(document.querySelector("#closed_won_chart"), closedWonOptions);
+    closedWonChart.render();
+
+    // Pipeline Set to Close This FY (Area Chart)
+    var closeDateOptions = {
+        chart: { type: 'area', height: 350 },
+        series: [{ name: 'Amount', data: {{ close_date_values | safe }} }],
+        xaxis: { categories: {{ close_dates | tojson | safe }}, type: 'datetime' },
+        colors: ['#f1b44c'],
+        fill: { opacity: 0.5 },
+        title: { text: 'Pipeline Set to Close This FY', align: 'left' },
+        dataLabels: { enabled: false },
+        tooltip: { y: { formatter: function(val) { return '$' + val.toLocaleString(); } } }
+    };
+    var closeDateChart = new ApexCharts(document.querySelector("#pipeline_by_close_date_chart"), closeDateOptions);
+    closeDateChart.render();
+</script>
 {% endblock %}
