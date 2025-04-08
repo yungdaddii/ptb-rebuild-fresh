@@ -1,43 +1,79 @@
-{% extends "base.html" %}
-{% block title %}Score Opportunities - Propensity to Buy{% endblock %}
+{% extends "partials/base.html" %}
+{% block title %}Score Opportunities{% endblock %}
 {% block content %}
-    <div class="card shadow-sm">
-        <div class="card-header bg-primary text-white">
-            <h4>Opportunity Scores</h4>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Amount</th>
-                            <th>Stage</th>
-                            <th>Close Date</th>
-                            <th>Propensity Score</th>
-                            <th>Win Probability</th>
-                            <th>Priority</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for opp in opportunities %}
-                        <tr>
-                            <td>{{ opp['Name'] }}</td>
-                            <td>${{ opp['Amount']|int|default(0, true)|format_number }}</td>
-                            <td>{{ opp['StageName'] }}</td>
-                            <td>{{ opp['CloseDate']|datetimeformat }}</td>
-                            <td>{{ opp['Propensity_Score__c'] }}</td>
-                            <td>{{ opp['Win_Probability__c'] }}%</td>
-                            <td>
-                                <span class="badge bg-{% if opp['Priority_Level__c'] == 'Top' %}success{% elif opp['Priority_Level__c'] == 'High' %}warning{% elif opp['Priority_Level__c'] == 'Medium' %}info{% else %}danger{% endif %}">
-                                    {{ opp['Priority_Level__c'] }}
-                                </span>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+<div class="main-content">
+    <div class="page-content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                        <h4 class="mb-sm-0">Score Opportunities</h4>
+                        <div class="page-title-right">
+                            <ol class="breadcrumb m-0">
+                                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                                <li class="breadcrumb-item active">Score Opportunities</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xl-7">
+                    <div class="card">
+                        <div class="card-header align-items-center d-flex">
+                            <h4 class="card-title mb-0 flex-grow-1">Opportunity Scores</h4>
+                            <div class="flex-shrink-0">
+                                <div class="dropdown card-header-dropdown">
+                                    <a class="text-reset dropdown-btn" href="#" data-bs-toggle="dropdown">
+                                        <span class="text-muted">Today<i class="mdi mdi-chevron-down ms-1"></i></span>
+                                    </a>
+                                    <div class="dropdown-menu dropdown-menu-end">
+                                        <a class="dropdown-item" href="#">Today</a>
+                                        <a class="dropdown-item" href="#">Last Week</a>
+                                        <a class="dropdown-item" href="#">Last Month</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive table-card">
+                                <table class="table table-borderless table-hover table-nowrap align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr class="text-muted">
+                                            <th scope="col">Name</th>
+                                            <th scope="col" style="width: 20%;">Close Date</th>
+                                            <th scope="col">Stage</th>
+                                            <th scope="col" style="width: 16%;">Priority</th>
+                                            <th scope="col" style="width: 12%;">Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for opp in opportunities %}
+                                        <tr>
+                                            <td>{{ opp['Name'] }}</td>
+                                            <td>{{ opp['CloseDate']|datetimeformat }}</td>
+                                            <td>{{ opp['StageName'] }}</td>
+                                            <td>
+                                                <span class="badge badge-soft-{% if opp['Priority_Level__c'] == 'Top' %}success{% elif opp['Priority_Level__c'] == 'High' %}warning{% elif opp['Priority_Level__c'] == 'Medium' %}info{% else %}danger{% endif %} p-2">
+                                                    {{ opp['Priority_Level__c'] }}
+                                                </span>
+                                            </td>
+                                            <td>${{ opp['Amount']|int|default(0, true)|format_number }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+    {% block footer %}{% include "partials/footer.html" %}{% endblock %}
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="{{ url_for('static', filename='libs/apexcharts/dist/apexcharts.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/pages/dashboard-crm.init.js') }}"></script>
 {% endblock %}
