@@ -50,12 +50,12 @@ def calculate_propensity(opportunity):
     
     propensity_score = min(round(score, 2), 10)
     win_prob = min(round(propensity_score * 10, 2), 100)
-    amount = opportunity.get('Amount', 0) or 0
+    amount = opportunity.get('Amount', 0) or 0  # Ensure Amount is never None
     priority = ('Top' if win_prob >= 80 and amount >= 1500000 else 
                 'High' if win_prob >= 60 else 
                 'Medium' if win_prob >= 40 else 'Low')
     
-    return propensity_score, win_prob, priority
+    return propensity_score, win_prob, priority, amount
 
 @app.route('/')
 def index():
@@ -68,12 +68,13 @@ def score_opportunities():
     all_result = sf.query_all(all_query)
     all_opportunities = all_result['records']
     
-    # Calculate propensity scores for all opportunities
+    # Calculate propensity scores and ensure Amount is numeric
     for opp in all_opportunities:
-        propensity_score, win_prob, priority = calculate_propensity(opp)
+        propensity_score, win_prob, priority, amount = calculate_propensity(opp)
         opp['Propensity_Score__c'] = propensity_score
         opp['Win_Probability__c'] = win_prob
         opp['Priority_Level__c'] = priority
+        opp['Amount'] = amount  # Replace Amount with processed value
 
     # Pagination for table
     page = request.args.get('page', 1, type=int)

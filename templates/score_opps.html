@@ -44,7 +44,7 @@
                                                 <i class="ri-exchange-dollar-line display-6 text-muted"></i>
                                             </div>
                                             <div class="flex-grow-1 ms-3">
-                                                <h2 class="mb-0">$<span class="counter-value" data-target="{{ all_opportunities | map(attribute='Amount') | map('default', 0) | sum | int }}">{{ all_opportunities | map(attribute='Amount') | map('default', 0) | sum | int }}</span></h2>
+                                                <h2 class="mb-0">$<span class="counter-value" data-target="{{ all_opportunities | sum(attribute='Amount') | int }}">{{ all_opportunities | sum(attribute='Amount') | int }}</span></h2>
                                             </div>
                                         </div>
                                     </div>
