@@ -26,7 +26,7 @@
                             <td>${{ opp['Amount']|int|default(0, true)|format_number }}</td>
                             <td>{{ opp['StageName'] }}</td>
                             <td>{{ opp['CloseDate']|datetimeformat }}</td>
-                            <td>{{ opp['Propensity_S - 0-100% opp['Propensity_Score__c'] }}</td>
+                            <td>{{ opp['Propensity_Score__c'] }}</td>
                             <td>{{ opp['Win_Probability__c'] }}%</td>
                             <td>
                                 <span class="badge bg-{% if opp['Priority_Level__c'] == 'Top' %}success{% elif opp['Priority_Level__c'] == 'High' %}warning{% elif opp['Priority_Level__c'] == 'Medium' %}info{% else %}danger{% endif %}">
