@@ -2,72 +2,91 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Propensity to Buy{% endblock %}</title>
-    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/app.min.css') }}" rel="stylesheet">
-    <style>
-        /* Custom Galaxy theme tweaks */
-        .sidebar { background-color: #212529; width: 250px; height: 100vh; position: fixed; }
-        .content-wrapper { margin-left: 250px; background-color: #f3f3f9; min-height: 100vh; }
-        .navbar-top { background-color: #212529; }
-        .card-header { background-color: #405189; color: white; }
-        @media (max-width: 768px) {
-            .sidebar { width: 0; overflow: hidden; transition: 0.3s; }
-            .content-wrapper { margin-left: 0; }
-            .sidebar.active { width: 250px; }
-        }
-    </style>
+    <!-- Velzon CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/icons.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.min.css') }}"> <!-- Adjust if style.css -->
 </head>
-<body>
-    <!-- Sidebar -->
-    <div class="sidebar bg-dark text-white p-3">
-        <a href="/" class="d-flex align-items-center mb-3 text-white text-decoration-none">
-            <h4 class="fw-medium">PTB App</h4>
-        </a>
-        <ul class="nav nav-pills flex-column mb-auto">
-            <li class="nav-item">
-                <a href="/" class="nav-link text-white" aria-current="page">
-                    <i class="ri-home-4-line me-2"></i>Home
-                </a>
-            </li>
-            <li>
-                <a href="/score_opps" class="nav-link text-white">
-                    <i class="ri-line-chart-line me-2"></i>Score Opportunities
-                </a>
-            </li>
-        </ul>
-    </div>
+<body data-sidebar="dark" data-layout-mode="dark">
+    <div id="layout-wrapper">
+        <!-- Topbar -->
+        <header id="page-topbar">
+            <div class="layout-width">
+                <div class="navbar-header">
+                    <div class="d-flex">
+                        <div class="navbar-brand-box">
+                            <a href="/" class="logo logo-dark">
+                                <span class="logo-sm"><img src="{{ url_for('static', filename='images/logo-sm.png') }}" alt="" height="22"></span>
+                                <span class="logo-lg"><img src="{{ url_for('static', filename='images/logo-dark.png') }}" alt="" height="17"></span>
+                            </a>
+                        </div>
+                        <button type="button" class="btn btn-sm px-3 fs-16 header-item vertical-menu-btn">
+                            <span class="hamburger-icon"><span></span><span></span><span></span></span>
+                        </button>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="dropdown topbar-user">
+                            <button type="button" class="btn" data-bs-toggle="dropdown">
+                                <span class="d-flex align-items-center">
+                                    <img class="rounded-circle header-profile-user" src="{{ url_for('static', filename='images/users/avatar-1.jpg') }}" alt="Avatar">
+                                    <span class="text-start ms-xl-2"><span class="d-none d-xl-inline-block ms-1 fw-medium">Edward</span></span>
+                                </span>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-end">
+                                <h6 class="dropdown-header">Welcome Edward!</h6>
+                                <a class="dropdown-item" href="#">Profile</a>
+                                <a class="dropdown-item" href="#">Settings</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="#">Logout</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
 
-    <!-- Topbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark navbar-top">
-        <div class="container-fluid">
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="ri-user-3-line"></i> Edward
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="#">Profile</a></li>
-                            <li><a class="dropdown-item" href="#">Settings</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#">Logout</a></li>
-                        </ul>
-                    </li>
-                </ul>
+        <!-- Sidebar (from menu.html partial) -->
+        <div class="vertical-menu">
+            <div data-simplebar class="h-100">
+                <div id="sidebar-menu">
+                    <ul class="metismenu list-unstyled" id="side-menu">
+                        <li class="menu-title">Menu</li>
+                        <li><a href="/" class="nav-link"><i class="ri-home-4-line"></i> Home</a></li>
+                        <li><a href="/score_opps" class="nav-link"><i class="ri-line-chart-line"></i> Score Opportunities</a></li>
+                    </ul>
+                </div>
             </div>
         </div>
-    </nav>
 
-    <!-- Content -->
-    <div class="content-wrapper p-4">
-        {% block content %}{% endblock %}
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="page-content">
+                <div class="container-fluid">
+                    {% block content %}{% endblock %}
+                </div>
+            </div>
+            <footer class="footer">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-sm-6">2025 © PTB App.</div>
+                        <div class="col-sm-6"><div class="text-sm-end d-none d-sm-block">Powered by Velzon</div></div>
+                    </div>
+                </div>
+            </footer>
+        </div>
     </div>
 
+    <!-- Velzon JS -->
     <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/simplebar.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/plugins.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/layout.js') }}"></script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <!-- ApexCharts for dashboard widgets -->
+    <script src="{{ url_for('static', filename='libs/apexcharts/apexcharts.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/pages/dashboard-crm.init.js') }}"></script>
 </body>
 </html>
