@@ -1,72 +1,70 @@
-
 <!DOCTYPE html>
-<html lang="en" data-layout="vertical" data-topbar="light" data-sidebar="dark" data-sidebar-size="lg" data-sidebar-image="none" data-bs-theme="dark" data-body-image="img-3" data-preloader="disable">
+<html lang="en" data-layout="vertical" data-topbar="light" data-sidebar="dark" data-sidebar-size="lg" data-sidebar-image="none" data-preloader="disable">
 <head>
     <meta charset="utf-8" />
-    <title>{% block title %}{% endblock title %} | Velzon - Admin & Dashboard Template</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta content="Premium Multipurpose Admin & Dashboard Template" name="description" />
-    <meta content="Themesbrand" name="author" />
-    <!-- App favicon -->
-    <link rel="shortcut icon" href="{{url_for('static' ,filename='images/favicon.ico')}}" />
-
-    {% block css %}
-    {% block extra_css %}
-    {% endblock extra_css %}
-
-    <!-- Layout config Js -->
-    <script src="{{url_for('static' ,filename='js/layout.js')}}"></script>
+    <meta content="Propensity to Buy Dashboard" name="description" />
+    <meta content="Edward Ionel" name="author" />
+    <title>{% block title %}Propensity to Buy{% endblock %}</title>
     <!-- Bootstrap Css -->
-    <link href="{{url_for('static' ,filename='css/bootstrap.min.css')}}" id="bootstrap-style" rel="stylesheet" type="text/css" />
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" type="text/css" />
     <!-- Icons Css -->
-    <link href="{{url_for('static' ,filename='css/icons.min.css')}}" rel="stylesheet" type="text/css" />
-    <!-- App Css-->
-    <link href="{{url_for('static' ,filename='css/app.min.css')}}" id="app-style" rel="stylesheet" type="text/css" />
-    <!-- custom Css-->
-    <link href="{{url_for('static' ,filename='css/custom.min.css')}}" id="app-style" rel="stylesheet" type="text/css" />
-    {% endblock css %}
+    <link href="{{ url_for('static', filename='css/icons.min.css') }}" rel="stylesheet" type="text/css" />
+    <!-- App Css (covers Galaxy styling) -->
+    <link href="{{ url_for('static', filename='css/app.min.css') }}" rel="stylesheet" type="text/css" />
+    {% block extra_css %}{% endblock %}
 </head>
-
 <body>
-    <!-- Begin page -->
     <div id="layout-wrapper">
         {% block header %}
         {% include "partials/topbar.html" %}
-        {% endblock header %}
-        {% block sidebar %}
-        {% include "partials/sidebar.html" %}
-        {% endblock sidebar %}
-        {% block content %}
-
-        {% block footer %}
-        {% endblock footer %}
-        {% endblock content %}
+        {% endblock %}
+        <!-- Vertical Sidebar -->
+        <div class="app-menu navbar-menu">
+            <div class="navbar-brand-box">
+                <a href="/" class="logo logo-dark">
+                    <span class="logo-sm">
+                        <img src="{{ url_for('static', filename='images/logo-sm.png') }}" alt="" height="22">
+                    </span>
+                    <span class="logo-lg">
+                        <img src="{{ url_for('static', filename='images/logo-dark.png') }}" alt="" height="17">
+                    </span>
+                </a>
+                <button type="button" class="btn btn-sm p-0 fs-20 header-item float-end btn-vertical-sm-hover" id="vertical-hover">
+                    <i class="ri-record-circle-line"></i>
+                </button>
+            </div>
+            <div id="scrollbar">
+                <div class="container-fluid">
+                    <div id="two-column-menu"></div>
+                    <ul class="navbar-nav" id="navbar-nav">
+                        <li class="menu-title"><span data-key="t-menu">Menu</span></li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/">
+                                <i class="ri-home-4-line"></i> <span data-key="t-home">Home</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/score_opps">
+                                <i class="ri-line-chart-line"></i> <span data-key="t-score-opps">Score Opportunities</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!-- Main Content -->
+        <div class="main-content">
+            {% block content %}{% endblock %}
+            {% block footer %}{% include "partials/footer.html" %}{% endblock %}
+        </div>
     </div>
-    
-    {% block extra_content %}        
-    {% endblock extra_content %}
-        
-    <!-- END layout-wrapper -->
-    {% block right_sidebar %}
-    {% include "partials/customizer.html" %}
-    {% endblock right_sidebar %}
-
-    {% block javascript %}
     <!-- JAVASCRIPT -->
-    <script src="{{url_for('static' ,filename='libs/bootstrap/dist/js/bootstrap.bundle.min.js')}}"></script>
-    <script src="{{url_for('static' ,filename='libs/simplebar/dist/simplebar.min.js')}}"></script>
-    <script src="{{url_for('static' ,filename='libs/node-waves/dist/waves.min.js')}}"></script>
-    <script src="{{url_for('static' ,filename='libs/feather-icons/dist/feather.min.js')}}"></script>
-    <script src="{{url_for('static' ,filename='js/pages/plugins/lord-icon-2.1.0.js')}}"></script>
-    <script src="{{url_for('static' ,filename='js/plugins.js')}}"></script>
-
-    {% block extra_js %}
-    {% endblock extra_js %}
-
-    <!-- App js -->
-    <script src="{{url_for('static' ,filename='js/app.js')}}"></script>
-    {% endblock javascript %}
-
+    <script src="{{ url_for('static', filename='libs/bootstrap/dist/js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='libs/simplebar/dist/simplebar.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/plugins.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/layout.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% block extra_js %}{% endblock %}
 </body>
-
 </html>
