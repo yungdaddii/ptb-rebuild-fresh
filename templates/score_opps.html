@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Score Opportunities - Propensity to Buy{% endblock %}
+{% block content %}
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h4>Opportunity Scores</h4>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Amount</th>
+                            <th>Stage</th>
+                            <th>Close Date</th>
+                            <th>Propensity Score</th>
+                            <th>Win Probability</th>
+                            <th>Priority</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for opp in opportunities %}
+                        <tr>
+                            <td>{{ opp['Name'] }}</td>
+                            <td>${{ opp['Amount']|int|default(0, true)|format_number }}</td>
+                            <td>{{ opp['StageName'] }}</td>
+                            <td>{{ opp['CloseDate']|datetimeformat }}</td>
+                            <td>{{ opp['Propensity_S - 0-100% opp['Propensity_Score__c'] }}</td>
+                            <td>{{ opp['Win_Probability__c'] }}%</td>
+                            <td>
+                                <span class="badge bg-{% if opp['Priority_Level__c'] == 'Top' %}success{% elif opp['Priority_Level__c'] == 'High' %}warning{% elif opp['Priority_Level__c'] == 'Medium' %}info{% else %}danger{% endif %}">
+                                    {{ opp['Priority_Level__c'] }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
