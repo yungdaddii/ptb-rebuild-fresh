@@ -31,7 +31,7 @@
                                                 <i class="ri-line-chart-line display-6 text-muted"></i>
                                             </div>
                                             <div class="flex-grow-1 ms-3">
-                                                <h2 class="mb-0"><span class="counter-value" data-target="{{ all_opportunities|length }}">{{ all_opportunities|length }}</span></h2>
+                                                <h2 class="mb-0"><span class="counter-value" data-target="{{ all_opportunities|length }}">{{ all_opportunities|length|format_number }}</span></h2>
                                             </div>
                                         </div>
                                     </div>
@@ -44,7 +44,7 @@
                                                 <i class="ri-exchange-dollar-line display-6 text-muted"></i>
                                             </div>
                                             <div class="flex-grow-1 ms-3">
-                                                <h2 class="mb-0">$<span class="counter-value" data-target="{{ all_opportunities | sum(attribute='Amount') | int }}">{{ all_opportunities | sum(attribute='Amount') | int }}</span></h2>
+                                                <h2 class="mb-0">$<span class="counter-value" data-target="{{ all_opportunities | sum(attribute='Amount') | int }}">{{ all_opportunities | sum(attribute='Amount') | int | format_number }}</span></h2>
                                             </div>
                                         </div>
                                     </div>
@@ -83,7 +83,7 @@
                                                 <i class="ri-service-line display-6 text-muted"></i>
                                             </div>
                                             <div class="flex-grow-1 ms-3">
-                                                <h2 class="mb-0"><span class="counter-value" data-target="{{ all_opportunities | selectattr('Priority_Level__c', 'equalto', 'Top') | list | length }}">{{ all_opportunities | selectattr('Priority_Level__c', 'equalto', 'Top') | list | length }}</span></h2>
+                                                <h2 class="mb-0"><span class="counter-value" data-target="{{ all_opportunities | selectattr('Priority_Level__c', 'equalto', 'Top') | list | length }}">{{ all_opportunities | selectattr('Priority_Level__c', 'equalto', 'Top') | list | length | format_number }}</span></h2>
                                             </div>
                                         </div>
                                     </div>
