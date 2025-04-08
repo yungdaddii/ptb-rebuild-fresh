@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from simple_salesforce import Salesforce
 import os
 from datetime import datetime
@@ -23,7 +23,7 @@ def average_filter(values):
 # Register the filter
 app.jinja_env.filters['average'] = average_filter
 
-# Existing template filters
+# Template filters
 @app.template_filter('datetimeformat')
 def datetimeformat(value):
     if value:
@@ -37,7 +37,7 @@ def datetimeformat(value):
 def format_number(value):
     return "{:,}".format(value)
 
-# Propensity calculation (unchanged)
+# Propensity calculation
 def calculate_propensity(opportunity):
     weights = {
         'StageName': 0.50
@@ -63,16 +63,37 @@ def index():
 
 @app.route('/score_opps')
 def score_opportunities():
-    query = "SELECT Id, Name, Amount, StageName, CloseDate FROM Opportunity LIMIT 10"
-    opportunities = sf.query(query)['records']
+    # Fetch all opportunities for tiles
+    all_query = "SELECT Id, Name, Amount, StageName, CloseDate FROM Opportunity"
+    all_result = sf.query_all(all_query)
+    all_opportunities = all_result['records']
     
-    for opp in opportunities:
+    # Calculate propensity scores for all opportunities
+    for opp in all_opportunities:
         propensity_score, win_prob, priority = calculate_propensity(opp)
         opp['Propensity_Score__c'] = propensity_score
         opp['Win_Probability__c'] = win_prob
         opp['Priority_Level__c'] = priority
-    
-    return render_template('score_opps.html', opportunities=opportunities)
+
+    # Pagination for table
+    page = request.args.get('page', 1, type=int)
+    per_page = 10  # Show 10 opportunities per page
+    offset = (page - 1) * per_page
+    total_opportunities = len(all_opportunities)
+    total_pages = (total_opportunities + per_page - 1) // per_page
+
+    # Slice opportunities for the current page
+    paginated_opportunities = all_opportunities[offset:offset + per_page]
+
+    return render_template(
+        'score_opps.html',
+        opportunities=paginated_opportunities,  # For table
+        all_opportunities=all_opportunities,    # For tiles
+        page=page,
+        per_page=per_page,
+        total_pages=total_pages,
+        total_opportunities=total_opportunities
+    )
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
