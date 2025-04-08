@@ -43,8 +43,10 @@
                                             <div class="flex-shrink-0">
                                                 <i class="ri-exchange-dollar-line display-6 text-muted"></i>
                                             </div>
-                                            <div class="flex-grow-1 ms-3">
-                                                <h2 class="mb-0">$<span class="counter-value" data-target="{{ all_opportunities | sum(attribute='Amount') | int }}">{{ all_opportunities | sum(attribute='Amount') | int | format_number }}</span></h2>
+                                            <div class="flex-grow-1 ms-3" style="overflow: hidden;">
+                                                <h2 class="mb-0" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                                    $<span class="counter-value" data-target="{{ all_opportunities | sum(attribute='Amount') | int }}">{{ all_opportunities | sum(attribute='Amount') | int | format_number }}</span>
+                                                </h2>
                                             </div>
                                         </div>
                                     </div>
