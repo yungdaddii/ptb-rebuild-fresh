@@ -21,8 +21,21 @@ def average_filter(values):
         return 0
     return sum(float(v or 0) for v in values) / len(values)
 
-# Register the filter
+# Custom filter for formatting large numbers
+def format_large_number(value):
+    if value is None:
+        return "0"
+    value = float(value)
+    if value >= 1000000:  # Millions
+        return f"{(value / 1000000):.1f}M"
+    elif value >= 1000:  # Thousands
+        return f"{(value / 1000):.1f}K"
+    else:
+        return "{:,}".format(int(value))  # Use commas for smaller numbers
+
+# Register filters
 app.jinja_env.filters['average'] = average_filter
+app.jinja_env.filters['format_large_number'] = format_large_number
 
 # Template filters
 @app.template_filter('datetimeformat')
@@ -78,19 +91,14 @@ def score_opportunities():
         opp['Amount'] = amount
 
     # Prepare chart data
-    # 1. Total Pipeline by Stage
     pipeline_by_stage = defaultdict(float)
     for opp in all_opportunities:
         pipeline_by_stage[opp['StageName']] += opp['Amount']
     stages = list(pipeline_by_stage.keys())
     pipeline_values = [pipeline_by_stage[stage] for stage in stages]
 
-    # 2. Total Closed Won
     closed_won_total = sum(opp['Amount'] for opp in all_opportunities if opp['StageName'] == 'Closed Won')
 
-    # 3. Top Priority Opportunities (already in all_opportunities, filtered in template)
-
-    # 4. Pipeline Set to Close This FY by Close Date
     current_year = datetime.now().year
     fy_start = f"{current_year}-01-01"
     fy_end = f"{current_year}-12-31"
