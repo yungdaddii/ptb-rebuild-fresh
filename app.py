@@ -1,4 +1,3 @@
-# ptb-rebuild-fresh/app.py
 from flask import Flask, render_template
 from simple_salesforce import Salesforce
 import os
@@ -15,7 +14,16 @@ sf = Salesforce(
 )
 print("Connected to Salesforce successfully!")
 
-# Custom filters
+# Custom Jinja2 filter for average
+def average_filter(values):
+    if not values:  # Handle empty list
+        return 0
+    return sum(float(v or 0) for v in values) / len(values)
+
+# Register the filter
+app.jinja_env.filters['average'] = average_filter
+
+# Existing template filters
 @app.template_filter('datetimeformat')
 def datetimeformat(value):
     if value:
@@ -29,10 +37,10 @@ def datetimeformat(value):
 def format_number(value):
     return "{:,}".format(value)
 
-# Propensity calculation (simplified for standard fields)
+# Propensity calculation (unchanged)
 def calculate_propensity(opportunity):
     weights = {
-        'StageName': 0.50  # Only using StageName for now
+        'StageName': 0.50
     }
     score = 0
     stage_map = {'Prospecting': 1, 'Qualification': 2, 'Needs Analysis': 3, 
@@ -55,7 +63,6 @@ def index():
 
 @app.route('/score_opps')
 def score_opportunities():
-    # Use only standard fields that exist
     query = "SELECT Id, Name, Amount, StageName, CloseDate FROM Opportunity LIMIT 10"
     opportunities = sf.query(query)['records']
     

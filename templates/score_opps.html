@@ -57,7 +57,7 @@
                                                 <i class="ri-pulse-line display-6 text-muted"></i>
                                             </div>
                                             <div class="flex-grow-1 ms-3">
-                                                <h2 class="mb-0"><span class="counter-value" data-target="{{ (opportunities | map(attribute='Propensity_Score__c') | list | average) | round(2) }}">{{ (opportunities | map(attribute='Propensity_Score__c') | list | average) | round(2) }}</span></h2>
+                                                <h2 class="mb-0"><span class="counter-value" data-target="{{ (opportunities | map(attribute='Propensity_Score__c') | list | average) | round(2) | default(0) }}">{{ (opportunities | map(attribute='Propensity_Score__c') | list | average) | round(2) | default(0) }}</span></h2>
                                             </div>
                                         </div>
                                     </div>
@@ -70,7 +70,7 @@
                                                 <i class="ri-trophy-line display-6 text-muted"></i>
                                             </div>
                                             <div class="flex-grow-1 ms-3">
-                                                <h2 class="mb-0"><span class="counter-value" data-target="{{ (opportunities | map(attribute='Win_Probability__c') | list | average) | round(2) }}">{{ (opportunities | map(attribute='Win_Probability__c') | list | average) | round(2) }}</span>%</h2>
+                                                <h2 class="mb-0"><span class="counter-value" data-target="{{ (opportunities | map(attribute='Win_Probability__c') | list | average) | round(2) | default(0) }}">{{ (opportunities | map(attribute='Win_Probability__c') | list | average) | round(2) | default(0) }}</span>%</h2>
                                             </div>
                                         </div>
                                     </div>
