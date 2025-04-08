@@ -15,7 +15,7 @@ sf = Salesforce(
 )
 print("Connected to Salesforce successfully!")
 
-# Custom filter for date formatting
+# Custom filters
 @app.template_filter('datetimeformat')
 def datetimeformat(value):
     if value:
@@ -29,35 +29,16 @@ def datetimeformat(value):
 def format_number(value):
     return "{:,}".format(value)
 
-# Propensity calculation
+# Propensity calculation (simplified for standard fields)
 def calculate_propensity(opportunity):
     weights = {
-        'StageName': 0.50,
-        'Short_List_Defined__c': 0.0938,
-        'Contact_Count__c': 0.0625,
-        'Number_of_Meetings__c': 0.0625,
-        'Sales_Touches__c': 0.0625,
-        'Past_Success_Signals__c': 0.0625,
-        'High_Intent__c': 0.0625,
-        'Timeline_Defined__c': 0.0313,
-        'Need_Defined__c': 0.0313,
-        'Budget_Defined__c': 0.0125,
-        'ICP_Fit__c': 0.0063,
-        'Engagement_Score__c': 0.0063,
-        'Intent_Data__c': 0.0063
+        'StageName': 0.50  # Only using StageName for now
     }
     score = 0
     stage_map = {'Prospecting': 1, 'Qualification': 2, 'Needs Analysis': 3, 
                  'Proposal': 4, 'Negotiation': 5, 'Closed Won': 6}
     
     score += stage_map.get(opportunity.get('StageName', 'Prospecting'), 1) * weights['StageName'] * 10 / 6
-    for key, weight in weights.items():
-        if key != 'StageName':
-            value = opportunity.get(key, 0)
-            if isinstance(value, bool):
-                score += (1 if value else 0) * weight * 10
-            elif isinstance(value, (int, float)):
-                score += min(value, 10) * weight
     
     propensity_score = min(round(score, 2), 10)
     win_prob = min(round(propensity_score * 10, 2), 100)
@@ -74,7 +55,8 @@ def index():
 
 @app.route('/score_opps')
 def score_opportunities():
-    query = "SELECT Id, Name, Amount, StageName, CloseDate, Short_List_Defined__c, Contact_Count__c, Number_of_Meetings__c, Sales_Touches__c, Past_Success_Signals__c, High_Intent__c, Timeline_Defined__c, Need_Defined__c, Budget_Defined__c, ICP_Fit__c, Engagement_Score__c, Intent_Data__c FROM Opportunity LIMIT 10"
+    # Use only standard fields that exist
+    query = "SELECT Id, Name, Amount, StageName, CloseDate FROM Opportunity LIMIT 10"
     opportunities = sf.query(query)['records']
     
     for opp in opportunities:
