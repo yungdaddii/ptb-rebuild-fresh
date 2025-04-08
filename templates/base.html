@@ -5,24 +5,68 @@
     <title>{% block title %}Propensity to Buy{% endblock %}</title>
     <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/app.min.css') }}" rel="stylesheet">
+    <style>
+        /* Custom Galaxy theme tweaks */
+        .sidebar { background-color: #212529; width: 250px; height: 100vh; position: fixed; }
+        .content-wrapper { margin-left: 250px; background-color: #f3f3f9; min-height: 100vh; }
+        .navbar-top { background-color: #212529; }
+        .card-header { background-color: #405189; color: white; }
+        @media (max-width: 768px) {
+            .sidebar { width: 0; overflow: hidden; transition: 0.3s; }
+            .content-wrapper { margin-left: 0; }
+            .sidebar.active { width: 250px; }
+        }
+    </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <!-- Sidebar -->
+    <div class="sidebar bg-dark text-white p-3">
+        <a href="/" class="d-flex align-items-center mb-3 text-white text-decoration-none">
+            <h4 class="fw-medium">PTB App</h4>
+        </a>
+        <ul class="nav nav-pills flex-column mb-auto">
+            <li class="nav-item">
+                <a href="/" class="nav-link text-white" aria-current="page">
+                    <i class="ri-home-4-line me-2"></i>Home
+                </a>
+            </li>
+            <li>
+                <a href="/score_opps" class="nav-link text-white">
+                    <i class="ri-line-chart-line me-2"></i>Score Opportunities
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Topbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-top">
         <div class="container-fluid">
-            <a class="navbar-brand" href="/">PTB App</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="/score_opps">Score Opportunities</a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="ri-user-3-line"></i> Edward
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#">Profile</a></li>
+                            <li><a class="dropdown-item" href="#">Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#">Logout</a></li>
+                        </ul>
+                    </li>
                 </ul>
             </div>
         </div>
     </nav>
-    <div class="container mt-5">
+
+    <!-- Content -->
+    <div class="content-wrapper p-4">
         {% block content %}{% endblock %}
     </div>
+
     <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
