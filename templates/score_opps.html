@@ -44,7 +44,7 @@
                                                 <i class="ri-exchange-dollar-line display-6 text-muted"></i>
                                             </div>
                                             <div class="flex-grow-1 ms-3">
-                                                <h2 class="mb-0">$<span class="counter-value" data-target="{{ all_opportunities | sum(attribute='Amount') | int | default(0) }}">{{ all_opportunities | sum(attribute='Amount') | int | default(0) }}</span></h2>
+                                                <h2 class="mb-0">$<span class="counter-value" data-target="{{ all_opportunities | map(attribute='Amount') | map('default', 0) | sum | int }}">{{ all_opportunities | map(attribute='Amount') | map('default', 0) | sum | int }}</span></h2>
                                             </div>
                                         </div>
                                     </div>
@@ -147,7 +147,7 @@
                                     <ul class="pagination justify-content-center">
                                         <li class="page-item {% if page <= 1 %}disabled{% endif %}">
                                             <a class="page-link" href="{{ url_for('score_opportunities', page=page-1) if page > 1 else '#' }}" aria-label="Previous">
-                                                <span aria-hidden="true">&laquo;</span>
+                                                <span aria-hidden="true">«</span>
                                             </a>
                                         </li>
                                         {% for p in range(1, total_pages + 1) %}
@@ -157,7 +157,7 @@
                                         {% endfor %}
                                         <li class="page-item {% if page >= total_pages %}disabled{% endif %}">
                                             <a class="page-link" href="{{ url_for('score_opportunities', page=page+1) if page < total_pages else '#' }}" aria-label="Next">
-                                                <span aria-hidden="true">&raquo;</span>
+                                                <span aria-hidden="true">»</span>
                                             </a>
                                         </li>
                                     </ul>
