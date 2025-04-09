@@ -2,33 +2,44 @@
 {% block title %}Score Opportunities{% endblock %}
 {% block content %}
 <style>
-    .crm-widget {
-        width: calc(100% + 15px); /* Extend to match right padding */
-        margin-left: -15px; /* Align with sidebar edge + 15px padding */
-        margin-right: 0;
+    .dashboard-wrapper {
+        padding-left: 25px; /* Match main-content margin-left */
+        padding-right: 15px; /* Match right padding */
+    }
+    .crm-widget, .card {
+        width: 100%;
+        margin: 0; /* No extra margins */
         padding: 0;
     }
-    .crm-widget .row {
+    .crm-widget .row, .card .row {
         width: 100%;
         margin: 0;
     }
-    .crm-widget .col {
-        flex: 1 1 20%; /* Equal width for 5 tiles */
+    .crm-widget .col, .card .col-xl-6, .card .col-xl-12 {
+        flex: 1 1 20%; /* Equal width for 5 tiles in top row */
         min-width: 0;
         padding: 1rem;
     }
-    .crm-widget h2 {
+    .card .col-xl-6 {
+        flex: 0 0 50%; /* Ensure charts stay 50% width */
+        max-width: 50%;
+    }
+    .card .col-xl-12 {
+        flex: 0 0 100%; /* Ensure table stays full width */
+        max-width: 100%;
+    }
+    .crm-widget h2, .card h2 {
         font-size: 1.6rem;
         margin-bottom: 0.5rem;
     }
-    .crm-widget .py-4 {
+    .crm-widget .py-4, .card .py-4 {
         padding-top: 1rem !important;
         padding-bottom: 1rem !important;
     }
 </style>
 <div class="main-content">
     <div class="page-content">
-        <div class="container-fluid" style="padding: 0;"> <!-- No extra padding -->
+        <div class="dashboard-wrapper"> <!-- Custom wrapper for consistency -->
             <div class="row">
                 <div class="col-12">
                     <div class="page-title-box d-sm-flex align-items-center justify-content-between">
