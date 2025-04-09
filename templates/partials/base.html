@@ -10,7 +10,7 @@
     <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" type="text/css" />
     <!-- Icons Css -->
     <link href="{{ url_for('static', filename='css/icons.min.css') }}" rel="stylesheet" type="text/css" />
-    <!-- App Css (covers Galaxy styling) -->
+    <!-- App Css -->
     <link href="{{ url_for('static', filename='css/app.min.css') }}" rel="stylesheet" type="text/css" />
     {% block extra_css %}{% endblock %}
 </head>
@@ -20,7 +20,7 @@
         {% include "partials/topbar.html" %}
         {% endblock %}
         <!-- Vertical Sidebar -->
-        <div class="app-menu navbar-menu">
+        <div class="app-menu navbar-menu" style="padding: 0; width: 250px;"> <!-- Reduced padding, fixed width -->
             <div class="navbar-brand-box">
                 <a href="/" class="logo logo-dark">
                     <span class="logo-sm">
@@ -54,7 +54,7 @@
             </div>
         </div>
         <!-- Main Content -->
-        <div class="main-content">
+        <div class="main-content" style="margin-left: 250px; padding: 0;"> <!-- Adjusted margin to match sidebar width -->
             {% block content %}{% endblock %}
             {% block footer %}{% include "partials/footer.html" %}{% endblock %}
         </div>

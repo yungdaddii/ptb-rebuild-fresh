@@ -3,9 +3,9 @@
 {% block content %}
 <style>
     .crm-widget {
-        width: calc(100% + 30px); /* Extend beyond container-fluid padding */
-        margin-left: -15px; /* Align with left edge of main-content */
-        margin-right: -15px; /* Ensure right edge aligns */
+        width: 100%; /* Full width of main-content */
+        margin: 0; /* No margins */
+        padding: 0; /* No padding */
     }
     .crm-widget .row {
         width: 100%; /* Full row width */
@@ -27,7 +27,7 @@
 </style>
 <div class="main-content">
     <div class="page-content">
-        <div class="container-fluid">
+        <div class="container-fluid" style="padding: 0;"> <!-- Remove container padding -->
             <div class="row">
                 <div class="col-12">
                     <div class="page-title-box d-sm-flex align-items-center justify-content-between">
