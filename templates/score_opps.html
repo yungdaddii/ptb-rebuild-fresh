@@ -122,7 +122,7 @@
                                                 <i class="ri-service-line display-6 text-muted"></i>
                                             </div>
                                             <div class="flex-grow-1 ms-3">
-                                                <h2 class="mb-0"><span class="counter-value" data-target="{{ all_opportunities | selectattr('Priority_Level__c', 'equalto', 'Top') | list | length }}">{{ all_opportunities | selectattr('Priority_Level__c', 'equalto', 'Top') | list | length | format_number }}</span></h2>
+                                                <h2 class="mb-0"><span class="counter-value" data-target="{{ all_opportunities | selectattr('Priority_Level__c', 'equalto', 'Top Priority') | list | length }}">{{ all_opportunities | selectattr('Priority_Level__c', 'equalto', 'Top Priority') | list | length | format_number }}</span></h2>
                                             </div>
                                         </div>
                                     </div>
@@ -174,7 +174,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {% for opp in all_opportunities if opp['Priority_Level__c'] == 'Top' %}
+                                        {% for opp in all_opportunities if opp['Priority_Level__c'] == 'Top Priority' %}
                                         <tr>
                                             <td>{{ opp['Name'] }}</td>
                                             <td>{{ opp['CloseDate']|datetimeformat }}</td>
@@ -240,7 +240,7 @@
                                             <td>{{ opp['CloseDate']|datetimeformat }}</td>
                                             <td>{{ opp['StageName'] }}</td>
                                             <td>
-                                                <span class="badge badge-black-text badge-soft-{% if opp['Priority_Level__c'] == 'Top' %}success{% elif opp['Priority_Level__c'] == 'High' %}warning{% elif opp['Priority_Level__c'] == 'Medium' %}info{% else %}danger{% endif %} p-2">
+                                                <span class="badge badge-black-text badge-soft-{% if opp['Priority_Level__c'] == 'Top Priority' %}success{% elif opp['Priority_Level__c'] == 'High Priority' %}warning{% elif opp['Priority_Level__c'] == 'Medium Priority' %}info{% else %}danger{% endif %} p-2">
                                                     {{ opp['Priority_Level__c'] }}
                                                 </span>
                                             </td>
