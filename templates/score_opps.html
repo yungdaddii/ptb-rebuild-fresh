@@ -3,22 +3,22 @@
 {% block content %}
 <style>
     .crm-widget {
-        width: 100%; /* Full width */
-        margin-left: -15px; /* Offset container-fluid padding to align with sidebar */
-        margin-right: 0; /* Keep right padding */
-        padding: 0; /* No internal padding */
+        width: calc(100% + 15px); /* Extend to match right padding */
+        margin-left: -15px; /* Align with sidebar edge + 15px padding */
+        margin-right: 0;
+        padding: 0;
     }
     .crm-widget .row {
-        width: 100%; /* Full row width */
-        margin: 0; /* Remove row margins */
+        width: 100%;
+        margin: 0;
     }
     .crm-widget .col {
         flex: 1 1 20%; /* Equal width for 5 tiles */
-        min-width: 0; /* Prevent overflow */
-        padding: 1rem; /* Consistent padding */
+        min-width: 0;
+        padding: 1rem;
     }
     .crm-widget h2 {
-        font-size: 1.6rem; /* Adjusted for fit */
+        font-size: 1.6rem;
         margin-bottom: 0.5rem;
     }
     .crm-widget .py-4 {
@@ -28,7 +28,7 @@
 </style>
 <div class="main-content">
     <div class="page-content">
-        <div class="container-fluid" style="padding-left: 0; padding-right: 15px;"> <!-- Match right padding -->
+        <div class="container-fluid" style="padding: 0;"> <!-- No extra padding -->
             <div class="row">
                 <div class="col-12">
                     <div class="page-title-box d-sm-flex align-items-center justify-content-between">
