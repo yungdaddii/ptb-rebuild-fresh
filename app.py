@@ -1,4 +1,3 @@
-
 from flask import Flask, render_template, request, make_response
 from simple_salesforce import Salesforce
 import os
@@ -73,10 +72,10 @@ def calculate_propensity(opportunity):
     stage_map = {
         'Prospecting': 1, 'Qualification': 2, 'Needs Analysis': 3, 
         'Proposal': 4, 'Negotiation': 5, 'Closed Won': 6,
-        'Negotiation/Review': 5, 'Id. Decision Makers': 3  # Handle unexpected values from logs
+        'Negotiation/Review': 5, 'Id. Decision Makers': 3
     }
     short_list_map = {'Not Considered': 0, 'Likely': 0.5, 'Confirmed': 1}
-    timeline_map = {'Not Defined': 0, 'Long Term': 0.5, 'Medium Term': 0.75, 'Short Term': 1}  # Adjust based on actual picklist values
+    timeline_map = {'Not Defined': 0, 'Long Term': 0.5, 'Medium Term': 0.75, 'Short Term': 1}
     
     score = 0
     
@@ -128,7 +127,7 @@ def calculate_propensity(opportunity):
         contacts = 0
     score += (contacts / 10) * 10 * weights['Contacts_Associated__c']
     
-    # Budget_Defined__c (0 or 1, Checkbox, assuming partial as 0.5 not applicable)
+    # Budget_Defined__c (0 or 1, Checkbox)
     budget = 1 if opportunity.get('Budget_Defined__c', False) else 0
     score += budget * 10 * weights['Budget_Defined__c']
     
@@ -187,6 +186,17 @@ def score_opportunities():
         opp['Priority_Level__c'] = priority
         opp['Amount'] = amount
         logger.debug(f"Scored {opp['Id']}: Propensity={propensity_score}, WinProb={win_prob}")
+
+        # Write scores back to Salesforce
+        try:
+            sf.Opportunity.update(opp['Id'], {
+                'Propensity_Score__c': propensity_score,
+                'Win_Probability__c': win_prob,
+                'Priority_Level__c': priority
+            })
+            logger.info(f"Updated SFDC for {opp['Id']}: Propensity={propensity_score}, WinProb={win_prob}, Priority={priority}")
+        except Exception as e:
+            logger.error(f"Failed to update SFDC for {opp['Id']}: {str(e)}")
 
     # Pagination
     page = request.args.get('page', 1, type=int)
