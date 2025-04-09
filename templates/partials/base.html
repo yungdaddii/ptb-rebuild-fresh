@@ -20,7 +20,7 @@
         {% include "partials/topbar.html" %}
         {% endblock %}
         <!-- Vertical Sidebar -->
-        <div class="app-menu navbar-menu" style="padding: 0; width: 250px;"> <!-- Reduced padding, fixed width -->
+        <div class="app-menu navbar-menu" style="padding: 0; width: 250px;">
             <div class="navbar-brand-box">
                 <a href="/" class="logo logo-dark">
                     <span class="logo-sm">
@@ -54,7 +54,7 @@
             </div>
         </div>
         <!-- Main Content -->
-        <div class="main-content" style="margin-left: 250px; padding: 0;"> <!-- Adjusted margin to match sidebar width -->
+        <div class="main-content" style="margin-left: 250px; padding: 15px;"> <!-- Consistent padding -->
             {% block content %}{% endblock %}
             {% block footer %}{% include "partials/footer.html" %}{% endblock %}
         </div>
