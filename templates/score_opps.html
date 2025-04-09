@@ -8,7 +8,7 @@
     }
     .crm-widget, .card {
         width: 100%;
-        margin: 15px 0; /* Add vertical spacing */
+        margin: 15px 0; /* Vertical spacing */
         padding: 0;
     }
     .crm-widget .row, .card .row {
@@ -35,6 +35,9 @@
     .crm-widget .py-4, .card .py-4 {
         padding-top: 1rem !important;
         padding-bottom: 1rem !important;
+    }
+    .badge-black-text {
+        color: #000000 !important; /* Black font for priority badges */
     }
 </style>
 <div class="main-content">
@@ -74,7 +77,7 @@
                                 </div>
                                 <div class="col">
                                     <div class="mt-3 mt-md-0 py-4 px-3">
-                                        <h5 class="text-muted text-uppercase fs-13">Total Amount <i class="ri-arrow-up-circle-line text-success fs-18 float-end align-middle"></i></h5>
+                                        <h5 class="text-muted text-uppercase fs-13">Total Open Pipeline <i class="ri-arrow-up-circle-line text-success fs-18 float-end align-middle"></i></h5>
                                         <div class="d-flex align-items-center">
                                             <div class="flex-shrink-0">
                                                 <i class="ri-exchange-dollar-line display-6 text-muted"></i>
@@ -202,7 +205,7 @@
                 <div class="col-xl-12">
                     <div class="card">
                         <div class="card-header align-items-center d-flex">
-                            <h4 class="card-title mb-0 flex-grow-1">Opportunity Scores</h4>
+                            <h4 class="card-title mb-0 flex-grow-1">Open Opportunities</h4>
                             <div class="flex-shrink-0">
                                 <div class="dropdown card-header-dropdown">
                                     <a class="text-reset dropdown-btn" href="#" data-bs-toggle="dropdown">
@@ -226,6 +229,8 @@
                                             <th scope="col">Stage</th>
                                             <th scope="col" style="width: 16%;">Priority</th>
                                             <th scope="col" style="width: 12%;">Amount</th>
+                                            <th scope="col" style="width: 12%;">Propensity Score</th>
+                                            <th scope="col" style="width: 12%;">Win Probability</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -235,11 +240,13 @@
                                             <td>{{ opp['CloseDate']|datetimeformat }}</td>
                                             <td>{{ opp['StageName'] }}</td>
                                             <td>
-                                                <span class="badge badge-soft-{% if opp['Priority_Level__c'] == 'Top' %}success{% elif opp['Priority_Level__c'] == 'High' %}warning{% elif opp['Priority_Level__c'] == 'Medium' %}info{% else %}danger{% endif %} p-2">
+                                                <span class="badge badge-black-text badge-soft-{% if opp['Priority_Level__c'] == 'Top' %}success{% elif opp['Priority_Level__c'] == 'High' %}warning{% elif opp['Priority_Level__c'] == 'Medium' %}info{% else %}danger{% endif %} p-2">
                                                     {{ opp['Priority_Level__c'] }}
                                                 </span>
                                             </td>
                                             <td>${{ opp['Amount']|int|default(0, true)|format_number }}</td>
+                                            <td>{{ opp['Propensity_Score__c']|round(2)|default(0) }}</td>
+                                            <td>{{ opp['Win_Probability__c']|round(2)|default(0) }}%</td>
                                         </tr>
                                         {% endfor %}
                                     </tbody>
