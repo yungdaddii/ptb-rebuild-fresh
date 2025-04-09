@@ -139,9 +139,10 @@ def calculate_propensity(opportunity):
     propensity_score = min(round(score, 2), 10)
     win_prob = min(round(propensity_score * 10, 2), 100)
     amount = float(opportunity.get('Amount', 0) or 0)
-    priority = ('Top' if win_prob >= 80 and amount >= 1500000 else 
-                'High' if win_prob >= 60 else 
-                'Medium' if win_prob >= 40 else 'Low')
+    # Updated to match Salesforce picklist values
+    priority = ('Top Priority' if win_prob >= 80 and amount >= 1500000 else 
+                'High Priority' if win_prob >= 60 else 
+                'Medium Priority' if win_prob >= 40 else 'Low Priority')
     
     return propensity_score, win_prob, priority, amount
 
@@ -168,10 +169,9 @@ def score_opportunities():
     for opp in all_opportunities:
         propensity_score, win_prob, priority, amount = calculate_propensity(opp)
         
-        # Check if scores changed before updating
         old_propensity = opp.get('Propensity_Score__c', 0) or 0
         old_win_prob = opp.get('Win_Probability__c', 0) or 0
-        old_priority = opp.get('Priority_Level__c', 'Low') or 'Low'
+        old_priority = opp.get('Priority_Level__c', 'Low Priority') or 'Low Priority'
         
         if (propensity_score != old_propensity or 
             win_prob != old_win_prob or 
