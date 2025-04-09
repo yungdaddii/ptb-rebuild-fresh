@@ -7,7 +7,7 @@ import logging
 import threading
 import time
 from salesforce_bulk import SalesforceBulk
-from salesforce_streaming import StreamingClient  # Corrected import
+from salesforce_streaming_client import StreamingClient  # Corrected import
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
 
