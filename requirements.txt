@@ -28,14 +28,4 @@ urllib3==2.3.0
 Werkzeug==3.1.3
 zeep==4.3.1
 salesforce-bulk
-comet-rest-api
-salesforce-bulk
-comet-rest-api
-salesforce-bulk
-cometd-client
-salesforce-bulk
-python-cometd
-salesforce-bulk
-salesforce-streaming-client
-salesforce-bulk
 salesforce-streaming-client
