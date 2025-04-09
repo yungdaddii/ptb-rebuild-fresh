@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, make_response
-from simple_salesforce import Salesforce, SalesforceStreamingClient
+from simple_salesforce import Salesforce
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from collections import defaultdict
 import logging
 import threading
@@ -181,28 +181,25 @@ def update_opportunity_scores(opp_id):
         except Exception as e:
             logger.error(f"Failed to update SFDC for {opp_id}: {str(e)}")
 
-def stream_opportunity_changes():
-    """Background thread to listen for Opportunity updates via Streaming API"""
-    client = SalesforceStreamingClient(
-        username=os.getenv('SF_USERNAME'),
-        password=os.getenv('SF_PASSWORD'),
-        security_token=os.getenv('SF_TOKEN'),
-        domain='propensiaai-dev-ed.develop.my.salesforce.com'
-    )
+def poll_opportunity_changes():
+    """Background thread to poll for recently modified Opportunities"""
+    while True:
+        # Poll for Opportunities modified in the last 5 minutes
+        five_minutes_ago = (datetime.utcnow() - timedelta(minutes=5)).strftime('%Y-%m-%dT%H:%M:%SZ')
+        query = f"""SELECT Id FROM Opportunity WHERE LastModifiedDate >= {five_minutes_ago}"""
+        try:
+            result = sf.query(query)
+            for opp in result['records']:
+                opp_id = opp['Id']
+                logger.info(f"Detected modification for Opportunity {opp_id}")
+                update_opportunity_scores(opp_id)
+        except Exception as e:
+            logger.error(f"Polling error: {str(e)}")
+        time.sleep(300)  # Poll every 5 minutes (300 seconds)
 
-    def handle_message(message):
-        if 'sobject' in message and 'Id' in message['sobject']:
-            opp_id = message['sobject']['Id']
-            logger.info(f"Detected update for Opportunity {opp_id}")
-            update_opportunity_scores(opp_id)
-
-    client.subscribe('/topic/OpportunityUpdates', callback=handle_message)
-    logger.info("Subscribed to OpportunityUpdates PushTopic")
-    client.start()
-
-# Start streaming in a background thread
-streaming_thread = threading.Thread(target=stream_opportunity_changes, daemon=True)
-streaming_thread.start()
+# Start polling in a background thread
+polling_thread = threading.Thread(target=poll_opportunity_changes, daemon=True)
+polling_thread.start()
 
 @app.route('/')
 def index():
@@ -224,7 +221,7 @@ def score_opportunities():
     for opp in all_opportunities[:5]:
         logger.info(f"Opportunity {opp['Id']}: StageName={opp['StageName']}, Amount={opp['Amount']}, LastModified={opp['LastModifiedDate']}")
 
-    # Compute scores for display only (updates handled by streaming)
+    # Compute scores for display only (updates handled by polling)
     for opp in all_opportunities:
         propensity_score, win_prob, priority, amount = calculate_propensity(opp)
         opp['Propensity_Score__c'] = propensity_score
