@@ -82,8 +82,8 @@ def calculate_propensity(opportunity):
     icp_fit = opportunity.get('icp_fit__c', 0) or 0
     score += icp_fit * 10 * weights['icp_fit__c']
     
-    # Engagement_Score__c (1-10)
-    engagement = opportunity.get('Engagement_Score__c', 0) or 0
+    # Engagement_Score__c (1-10, convert from string)
+    engagement = float(opportunity.get('Engagement_Score__c', 0) or 0)
     score += (engagement / 10) * 10 * weights['Engagement_Score__c']
     
     # Intent_Data__c (0 or 1)
@@ -94,16 +94,16 @@ def calculate_propensity(opportunity):
     past_success = opportunity.get('Past_Success__c', 0) or 0
     score += past_success * 10 * weights['Past_Success__c']
     
-    # Total_Sales_Touches__c (1-10)
-    sales_touches = min(opportunity.get('Total_Sales_Touches__c', 0) or 0, 10)
+    # Total_Sales_Touches__c (1-10, convert from string)
+    sales_touches = min(float(opportunity.get('Total_Sales_Touches__c', 0) or 0), 10)
     score += (sales_touches / 10) * 10 * weights['Total_Sales_Touches__c']
     
-    # Number_of_Meetings__c (1-10)
-    meetings = min(opportunity.get('Number_of_Meetings__c', 0) or 0, 10)
+    # Number_of_Meetings__c (1-10, convert from string)
+    meetings = min(float(opportunity.get('Number_of_Meetings__c', 0) or 0), 10)
     score += (meetings / 10) * 10 * weights['Number_of_Meetings__c']
     
-    # Contacts_Associated__c (1-10)
-    contacts = min(opportunity.get('Contacts_Associated__c', 0) or 0, 10)
+    # Contacts_Associated__c (1-10, convert from string)
+    contacts = min(float(opportunity.get('Contacts_Associated__c', 0) or 0), 10)
     score += (contacts / 10) * 10 * weights['Contacts_Associated__c']
     
     # Budget_Defined__c (0, 0.5, 1)
@@ -129,7 +129,7 @@ def calculate_propensity(opportunity):
     # Final scoring
     propensity_score = min(round(score, 2), 10)
     win_prob = min(round(propensity_score * 10, 2), 100)
-    amount = opportunity.get('Amount', 0) or 0
+    amount = float(opportunity.get('Amount', 0) or 0)
     priority = ('Top' if win_prob >= 80 and amount >= 1500000 else 
                 'High' if win_prob >= 60 else 
                 'Medium' if win_prob >= 40 else 'Low')
