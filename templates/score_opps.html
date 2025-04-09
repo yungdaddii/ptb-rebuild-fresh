@@ -3,11 +3,13 @@
 {% block content %}
 <style>
     .crm-widget {
-        width: 100%; /* Ensure card takes full width */
-        margin-left: 0; /* Remove left margin to align with sidebar edge */
+        width: calc(100% + 30px); /* Extend beyond container-fluid padding */
+        margin-left: -15px; /* Align with left edge of main-content */
+        margin-right: -15px; /* Ensure right edge aligns */
     }
     .crm-widget .row {
-        width: 100%; /* Stretch row to full width */
+        width: 100%; /* Full row width */
+        margin: 0; /* Remove row margins */
     }
     .crm-widget .col {
         flex: 1 1 20%; /* Equal width for 5 tiles */
@@ -15,7 +17,7 @@
         padding: 1rem; /* Consistent padding */
     }
     .crm-widget h2 {
-        font-size: 1.6rem; /* Slightly smaller to fit */
+        font-size: 1.6rem; /* Adjusted for fit */
         margin-bottom: 0.5rem;
     }
     .crm-widget .py-4 {
