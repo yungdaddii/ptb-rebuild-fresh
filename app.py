@@ -7,7 +7,7 @@ import logging
 import threading
 import time
 from salesforce_bulk import SalesforceBulk
-from comet_rest_api import CometClient  # For Streaming API (install via pip)
+from salesforce_streaming import StreamingClient  # Corrected import
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
 
@@ -30,12 +30,6 @@ bulk = SalesforceBulk(
     password=os.getenv('SF_PASSWORD'),
     security_token=os.getenv('SF_TOKEN'),
     host='propensiaai-dev-ed.develop.my.salesforce.com'
-)
-
-# Salesforce Streaming API (CometD client)
-streaming_client = CometClient(
-    url='https://propensiaai-dev-ed.develop.my.salesforce.com/cometd/59.0',
-    auth_token=sf.session_id
 )
 
 # Custom Jinja2 filters
@@ -190,19 +184,22 @@ def update_opportunity_scores(opp_id):
 
 def stream_opportunity_changes():
     """Background thread to listen for Opportunity updates via Streaming API"""
-    def handle_message(message):
-        if message.get('event', {}).get('type') == 'updated':
-            opp_id = message['sobject']['Id']
+    client = StreamingClient(
+        username=os.getenv('SF_USERNAME'),
+        password=os.getenv('SF_PASSWORD'),
+        security_token=os.getenv('SF_TOKEN'),
+        domain='propensiaai-dev-ed.develop.my.salesforce.com'
+    )
+
+    def handle_message(channel, data):
+        if channel == '/topic/OpportunityUpdates' and 'Id' in data['sobject']:
+            opp_id = data['sobject']['Id']
             logger.info(f"Detected update for Opportunity {opp_id}")
             update_opportunity_scores(opp_id)
 
-    # Subscribe to PushTopic (assumes 'OpportunityUpdates' exists in Salesforce)
-    streaming_client.subscribe('/topic/OpportunityUpdates', handle_message)
+    client.subscribe('/topic/OpportunityUpdates', handle_message)
     logger.info("Subscribed to OpportunityUpdates PushTopic")
-    
-    # Keep the thread running
-    while True:
-        time.sleep(1)  # Avoid tight loop
+    client.start_streaming()
 
 # Start streaming in a background thread
 streaming_thread = threading.Thread(target=stream_opportunity_changes, daemon=True)
@@ -228,7 +225,7 @@ def score_opportunities():
     for opp in all_opportunities[:5]:
         logger.info(f"Opportunity {opp['Id']}: StageName={opp['StageName']}, Amount={opp['Amount']}, LastModified={opp['LastModifiedDate']}")
 
-    # Compute scores but don't update here (handled by streaming)
+    # Compute scores for display only (updates handled by streaming)
     for opp in all_opportunities:
         propensity_score, win_prob, priority, amount = calculate_propensity(opp)
         opp['Propensity_Score__c'] = propensity_score
