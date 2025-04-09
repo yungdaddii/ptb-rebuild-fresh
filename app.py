@@ -1,3 +1,4 @@
+
 from flask import Flask, render_template, request, make_response
 from simple_salesforce import Salesforce
 import os
@@ -69,8 +70,13 @@ def calculate_propensity(opportunity):
         'Short_List_Defined__c': 0.0938, # 9.38%
         'High_Intent__c': 0.0625      # 6.25%
     }
-    stage_map = {'Prospecting': 1, 'Qualification': 2, 'Needs Analysis': 3, 
-                 'Proposal': 4, 'Negotiation': 5, 'Closed Won': 6}
+    stage_map = {
+        'Prospecting': 1, 'Qualification': 2, 'Needs Analysis': 3, 
+        'Proposal': 4, 'Negotiation': 5, 'Closed Won': 6,
+        'Negotiation/Review': 5, 'Id. Decision Makers': 3  # Handle unexpected values from logs
+    }
+    short_list_map = {'Not Considered': 0, 'Likely': 0.5, 'Confirmed': 1}
+    timeline_map = {'Not Defined': 0, 'Long Term': 0.5, 'Medium Term': 0.75, 'Short Term': 1}  # Adjust based on actual picklist values
     
     score = 0
     
@@ -78,52 +84,70 @@ def calculate_propensity(opportunity):
     stage_value = stage_map.get(opportunity.get('StageName', 'Prospecting'), 1)
     score += (stage_value / 6) * 10 * weights['StageName']
     
-    # icp_fit__c (0 or 1)
-    icp_fit = opportunity.get('icp_fit__c', 0) or 0
+    # icp_fit__c (0 or 1, Checkbox)
+    icp_fit = 1 if opportunity.get('icp_fit__c', False) else 0
     score += icp_fit * 10 * weights['icp_fit__c']
     
-    # Engagement_Score__c (1-10, convert from string)
-    engagement = float(opportunity.get('Engagement_Score__c', 0) or 0)
+    # Engagement_Score__c (1-10, Picklist)
+    engagement_str = opportunity.get('Engagement_Score__c', '0') or '0'
+    try:
+        engagement = float(engagement_str)
+    except ValueError:
+        engagement = 0
     score += (engagement / 10) * 10 * weights['Engagement_Score__c']
     
-    # Intent_Data__c (0 or 1)
-    intent = opportunity.get('Intent_Data__c', 0) or 0
+    # Intent_Data__c (0 or 1, Checkbox)
+    intent = 1 if opportunity.get('Intent_Data__c', False) else 0
     score += intent * 10 * weights['Intent_Data__c']
     
-    # Past_Success__c (0 or 1)
-    past_success = opportunity.get('Past_Success__c', 0) or 0
+    # Past_Success__c (0 or 1, Checkbox)
+    past_success = 1 if opportunity.get('Past_Success__c', False) else 0
     score += past_success * 10 * weights['Past_Success__c']
     
-    # Total_Sales_Touches__c (1-10, convert from string)
-    sales_touches = min(float(opportunity.get('Total_Sales_Touches__c', 0) or 0), 10)
+    # Total_Sales_Touches__c (1-10, Picklist)
+    touches_str = opportunity.get('Total_Sales_Touches__c', '0') or '0'
+    try:
+        sales_touches = min(float(touches_str), 10)
+    except ValueError:
+        sales_touches = 0
     score += (sales_touches / 10) * 10 * weights['Total_Sales_Touches__c']
     
-    # Number_of_Meetings__c (1-10, convert from string)
-    meetings = min(float(opportunity.get('Number_of_Meetings__c', 0) or 0), 10)
+    # Number_of_Meetings__c (1-10, Picklist)
+    meetings_str = opportunity.get('Number_of_Meetings__c', '0') or '0'
+    try:
+        meetings = min(float(meetings_str), 10)
+    except ValueError:
+        meetings = 0
     score += (meetings / 10) * 10 * weights['Number_of_Meetings__c']
     
-    # Contacts_Associated__c (1-10, convert from string)
-    contacts = min(float(opportunity.get('Contacts_Associated__c', 0) or 0), 10)
+    # Contacts_Associated__c (1-10, Picklist)
+    contacts_str = opportunity.get('Contacts_Associated__c', '0') or '0'
+    try:
+        contacts = min(float(contacts_str), 10)
+    except ValueError:
+        contacts = 0
     score += (contacts / 10) * 10 * weights['Contacts_Associated__c']
     
-    # Budget_Defined__c (0, 0.5, 1)
-    budget = opportunity.get('Budget_Defined__c', 0) or 0
+    # Budget_Defined__c (0 or 1, Checkbox, assuming partial as 0.5 not applicable)
+    budget = 1 if opportunity.get('Budget_Defined__c', False) else 0
     score += budget * 10 * weights['Budget_Defined__c']
     
-    # Need_Defined__c (0 or 1)
-    need = opportunity.get('Need_Defined__c', 0) or 0
+    # Need_Defined__c (0 or 1, Checkbox)
+    need = 1 if opportunity.get('Need_Defined__c', False) else 0
     score += need * 10 * weights['Need_Defined__c']
     
-    # Timeline_Defined__c (0, 0.5, 0.75, 1)
-    timeline = opportunity.get('Timeline_Defined__c', 0) or 0
+    # Timeline_Defined__c (0, 0.5, 0.75, 1, Picklist)
+    timeline_value = opportunity.get('Timeline_Defined__c', 'Not Defined') or 'Not Defined'
+    timeline = timeline_map.get(timeline_value, 0)
     score += timeline * 10 * weights['Timeline_Defined__c']
     
-    # Short_List_Defined__c (0, 0.5, 1)
-    short_list = opportunity.get('Short_List_Defined__c', 0) or 0
+    # Short_List_Defined__c (0, 0.5, 1, Picklist)
+    short_list_value = opportunity.get('Short_List_Defined__c', 'Not Considered') or 'Not Considered'
+    short_list = short_list_map.get(short_list_value, 0)
     score += short_list * 10 * weights['Short_List_Defined__c']
     
-    # High_Intent__c (0 or 1)
-    high_intent = opportunity.get('High_Intent__c', 0) or 0
+    # High_Intent__c (0 or 1, Checkbox)
+    high_intent = 1 if opportunity.get('High_Intent__c', False) else 0
     score += high_intent * 10 * weights['High_Intent__c']
     
     # Final scoring
