@@ -2,17 +2,25 @@
 {% block title %}Score Opportunities{% endblock %}
 {% block content %}
 <style>
+    .crm-widget {
+        width: 100%; /* Ensure card takes full width */
+        margin-left: 0; /* Remove left margin to align with sidebar edge */
+    }
+    .crm-widget .row {
+        width: 100%; /* Stretch row to full width */
+    }
     .crm-widget .col {
-        flex: 1 1 33.33%; /* Ensure tiles take up more space */
+        flex: 1 1 20%; /* Equal width for 5 tiles */
         min-width: 0; /* Prevent overflow */
+        padding: 1rem; /* Consistent padding */
     }
     .crm-widget h2 {
-        font-size: 1.8rem; /* Slightly larger text */
+        font-size: 1.6rem; /* Slightly smaller to fit */
         margin-bottom: 0.5rem;
     }
     .crm-widget .py-4 {
-        padding-top: 1.5rem !important; /* Adjust padding for balance */
-        padding-bottom: 1.5rem !important;
+        padding-top: 1rem !important;
+        padding-bottom: 1rem !important;
     }
 </style>
 <div class="main-content">
@@ -36,7 +44,7 @@
                 <div class="col-xl-12">
                     <div class="card crm-widget">
                         <div class="card-body p-0">
-                            <div class="row row-cols-xxl-3 row-cols-md-2 row-cols-1 g-0">
+                            <div class="row row-cols-xxl-5 row-cols-md-3 row-cols-1 g-0">
                                 <div class="col">
                                     <div class="py-4 px-3">
                                         <h5 class="text-muted text-uppercase fs-13">Total Opportunities <i class="ri-arrow-up-circle-line text-success fs-18 float-end align-middle"></i></h5>
