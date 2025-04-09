@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, make_response
-from simple_salesforce import Salesforce
+from simple_salesforce import Salesforce, SalesforceStreamingClient
 import os
 from datetime import datetime
 from collections import defaultdict
@@ -7,7 +7,6 @@ import logging
 import threading
 import time
 from salesforce_bulk import SalesforceBulk
-from salesforce_streaming_client import StreamingClient  # Corrected import
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
 
@@ -184,22 +183,22 @@ def update_opportunity_scores(opp_id):
 
 def stream_opportunity_changes():
     """Background thread to listen for Opportunity updates via Streaming API"""
-    client = StreamingClient(
+    client = SalesforceStreamingClient(
         username=os.getenv('SF_USERNAME'),
         password=os.getenv('SF_PASSWORD'),
         security_token=os.getenv('SF_TOKEN'),
         domain='propensiaai-dev-ed.develop.my.salesforce.com'
     )
 
-    def handle_message(channel, data):
-        if channel == '/topic/OpportunityUpdates' and 'Id' in data['sobject']:
-            opp_id = data['sobject']['Id']
+    def handle_message(message):
+        if 'sobject' in message and 'Id' in message['sobject']:
+            opp_id = message['sobject']['Id']
             logger.info(f"Detected update for Opportunity {opp_id}")
             update_opportunity_scores(opp_id)
 
-    client.subscribe('/topic/OpportunityUpdates', handle_message)
+    client.subscribe('/topic/OpportunityUpdates', callback=handle_message)
     logger.info("Subscribed to OpportunityUpdates PushTopic")
-    client.start_streaming()
+    client.start()
 
 # Start streaming in a background thread
 streaming_thread = threading.Thread(target=stream_opportunity_changes, daemon=True)
