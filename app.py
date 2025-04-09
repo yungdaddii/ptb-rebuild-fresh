@@ -79,15 +79,12 @@ def calculate_propensity(opportunity):
     
     score = 0
     
-    # StageName (1-6, normalized to 0-10)
     stage_value = stage_map.get(opportunity.get('StageName', 'Prospecting'), 1)
     score += (stage_value / 6) * 10 * weights['StageName']
     
-    # icp_fit__c (0 or 1, Checkbox)
     icp_fit = 1 if opportunity.get('icp_fit__c', False) else 0
     score += icp_fit * 10 * weights['icp_fit__c']
     
-    # Engagement_Score__c (1-10, Picklist)
     engagement_str = opportunity.get('Engagement_Score__c', '0') or '0'
     try:
         engagement = float(engagement_str)
@@ -95,15 +92,12 @@ def calculate_propensity(opportunity):
         engagement = 0
     score += (engagement / 10) * 10 * weights['Engagement_Score__c']
     
-    # Intent_Data__c (0 or 1, Checkbox)
     intent = 1 if opportunity.get('Intent_Data__c', False) else 0
     score += intent * 10 * weights['Intent_Data__c']
     
-    # Past_Success__c (0 or 1, Checkbox)
     past_success = 1 if opportunity.get('Past_Success__c', False) else 0
     score += past_success * 10 * weights['Past_Success__c']
     
-    # Total_Sales_Touches__c (1-10, Picklist)
     touches_str = opportunity.get('Total_Sales_Touches__c', '0') or '0'
     try:
         sales_touches = min(float(touches_str), 10)
@@ -111,7 +105,6 @@ def calculate_propensity(opportunity):
         sales_touches = 0
     score += (sales_touches / 10) * 10 * weights['Total_Sales_Touches__c']
     
-    # Number_of_Meetings__c (1-10, Picklist)
     meetings_str = opportunity.get('Number_of_Meetings__c', '0') or '0'
     try:
         meetings = min(float(meetings_str), 10)
@@ -119,7 +112,6 @@ def calculate_propensity(opportunity):
         meetings = 0
     score += (meetings / 10) * 10 * weights['Number_of_Meetings__c']
     
-    # Contacts_Associated__c (1-10, Picklist)
     contacts_str = opportunity.get('Contacts_Associated__c', '0') or '0'
     try:
         contacts = min(float(contacts_str), 10)
@@ -127,29 +119,23 @@ def calculate_propensity(opportunity):
         contacts = 0
     score += (contacts / 10) * 10 * weights['Contacts_Associated__c']
     
-    # Budget_Defined__c (0 or 1, Checkbox)
     budget = 1 if opportunity.get('Budget_Defined__c', False) else 0
     score += budget * 10 * weights['Budget_Defined__c']
     
-    # Need_Defined__c (0 or 1, Checkbox)
     need = 1 if opportunity.get('Need_Defined__c', False) else 0
     score += need * 10 * weights['Need_Defined__c']
     
-    # Timeline_Defined__c (0, 0.5, 0.75, 1, Picklist)
     timeline_value = opportunity.get('Timeline_Defined__c', 'Not Defined') or 'Not Defined'
     timeline = timeline_map.get(timeline_value, 0)
     score += timeline * 10 * weights['Timeline_Defined__c']
     
-    # Short_List_Defined__c (0, 0.5, 1, Picklist)
     short_list_value = opportunity.get('Short_List_Defined__c', 'Not Considered') or 'Not Considered'
     short_list = short_list_map.get(short_list_value, 0)
     score += short_list * 10 * weights['Short_List_Defined__c']
     
-    # High_Intent__c (0 or 1, Checkbox)
     high_intent = 1 if opportunity.get('High_Intent__c', False) else 0
     score += high_intent * 10 * weights['High_Intent__c']
     
-    # Final scoring
     propensity_score = min(round(score, 2), 10)
     win_prob = min(round(propensity_score * 10, 2), 100)
     amount = float(opportunity.get('Amount', 0) or 0)
@@ -165,40 +151,47 @@ def index():
 
 @app.route('/score_opps')
 def score_opportunities():
-    # Fetch all relevant fields from Salesforce
     all_query = """SELECT Id, Name, Amount, StageName, CloseDate, LastModifiedDate, 
                    icp_fit__c, Engagement_Score__c, Intent_Data__c, Past_Success__c, 
                    Total_Sales_Touches__c, Number_of_Meetings__c, Contacts_Associated__c, 
                    Budget_Defined__c, Need_Defined__c, Timeline_Defined__c, 
-                   Short_List_Defined__c, High_Intent__c 
+                   Short_List_Defined__c, High_Intent__c,
+                   Propensity_Score__c, Win_Probability__c, Priority_Level__c 
                    FROM Opportunity"""
     all_result = sf.query_all(all_query)
     all_opportunities = all_result['records']
     
     logger.info(f"Fetched {len(all_opportunities)} opportunities at {datetime.now()}")
-    for opp in all_opportunities[:5]:  # Log first 5 for brevity
+    for opp in all_opportunities[:5]:
         logger.info(f"Opportunity {opp['Id']}: StageName={opp['StageName']}, Amount={opp['Amount']}, LastModified={opp['LastModifiedDate']}")
 
     for opp in all_opportunities:
         propensity_score, win_prob, priority, amount = calculate_propensity(opp)
+        
+        # Check if scores changed before updating
+        old_propensity = opp.get('Propensity_Score__c', 0) or 0
+        old_win_prob = opp.get('Win_Probability__c', 0) or 0
+        old_priority = opp.get('Priority_Level__c', 'Low') or 'Low'
+        
+        if (propensity_score != old_propensity or 
+            win_prob != old_win_prob or 
+            priority != old_priority):
+            try:
+                sf.Opportunity.update(opp['Id'], {
+                    'Propensity_Score__c': propensity_score,
+                    'Win_Probability__c': win_prob,
+                    'Priority_Level__c': priority
+                })
+                logger.info(f"Updated SFDC for {opp['Id']}: Propensity={propensity_score}, WinProb={win_prob}, Priority={priority}")
+            except Exception as e:
+                logger.error(f"Failed to update SFDC for {opp['Id']}: {str(e)}")
+        
         opp['Propensity_Score__c'] = propensity_score
         opp['Win_Probability__c'] = win_prob
         opp['Priority_Level__c'] = priority
         opp['Amount'] = amount
         logger.debug(f"Scored {opp['Id']}: Propensity={propensity_score}, WinProb={win_prob}")
 
-        # Write scores back to Salesforce
-        try:
-            sf.Opportunity.update(opp['Id'], {
-                'Propensity_Score__c': propensity_score,
-                'Win_Probability__c': win_prob,
-                'Priority_Level__c': priority
-            })
-            logger.info(f"Updated SFDC for {opp['Id']}: Propensity={propensity_score}, WinProb={win_prob}, Priority={priority}")
-        except Exception as e:
-            logger.error(f"Failed to update SFDC for {opp['Id']}: {str(e)}")
-
-    # Pagination
     page = request.args.get('page', 1, type=int)
     per_page = 10
     offset = (page - 1) * per_page
@@ -206,7 +199,6 @@ def score_opportunities():
     total_pages = (total_opportunities + per_page - 1) // per_page
     paginated_opportunities = all_opportunities[offset:offset + per_page]
 
-    # Chart data
     pipeline_by_stage = defaultdict(float)
     for opp in all_opportunities:
         pipeline_by_stage[opp['StageName']] += opp['Amount']
@@ -226,7 +218,6 @@ def score_opportunities():
     close_dates = sorted(pipeline_by_close_date.keys())
     close_date_values = [pipeline_by_close_date[date] for date in close_dates]
 
-    # Render with no-cache headers
     response = make_response(render_template(
         'score_opps.html',
         opportunities=paginated_opportunities,
