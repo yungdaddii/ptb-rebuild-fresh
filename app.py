@@ -4,6 +4,10 @@ import os
 from datetime import datetime
 from collections import defaultdict
 import logging
+import threading
+import time
+from salesforce_bulk import SalesforceBulk
+from comet_rest_api import CometClient  # For Streaming API (install via pip)
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
 
@@ -11,14 +15,28 @@ app = Flask(__name__, static_folder='static', template_folder='templates')
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Salesforce connection
+# Salesforce connection (REST API for queries/updates)
 sf = Salesforce(
     username=os.getenv('SF_USERNAME'),
     password=os.getenv('SF_PASSWORD'),
     security_token=os.getenv('SF_TOKEN'),
     instance='propensiaai-dev-ed.develop.my.salesforce.com'
 )
-logger.info("Connected to Salesforce successfully!")
+logger.info("Connected to Salesforce REST API successfully!")
+
+# Salesforce Bulk API for updates
+bulk = SalesforceBulk(
+    username=os.getenv('SF_USERNAME'),
+    password=os.getenv('SF_PASSWORD'),
+    security_token=os.getenv('SF_TOKEN'),
+    host='propensiaai-dev-ed.develop.my.salesforce.com'
+)
+
+# Salesforce Streaming API (CometD client)
+streaming_client = CometClient(
+    url='https://propensiaai-dev-ed.develop.my.salesforce.com/cometd/59.0',
+    auth_token=sf.session_id
+)
 
 # Custom Jinja2 filters
 def average_filter(values):
@@ -139,7 +157,6 @@ def calculate_propensity(opportunity):
     propensity_score = min(round(score, 2), 10)
     win_prob = min(round(propensity_score * 10, 2), 100)
     amount = float(opportunity.get('Amount', 0) or 0)
-    # Updated priority matrix per new criteria
     if win_prob >= 55 and amount >= 500000:
         priority = 'Top Priority'
     elif win_prob >= 40 and win_prob < 55 and amount >= 250000:
@@ -150,6 +167,46 @@ def calculate_propensity(opportunity):
         priority = 'Low Priority'
     
     return propensity_score, win_prob, priority, amount
+
+def update_opportunity_scores(opp_id):
+    """Update scores for a single opportunity"""
+    query = f"""SELECT Id, Name, Amount, StageName, icp_fit__c, Engagement_Score__c, Intent_Data__c, 
+                Past_Success__c, Total_Sales_Touches__c, Number_of_Meetings__c, Contacts_Associated__c, 
+                Budget_Defined__c, Need_Defined__c, Timeline_Defined__c, Short_List_Defined__c, 
+                High_Intent__c FROM Opportunity WHERE Id = '{opp_id}'"""
+    result = sf.query(query)
+    if result['totalSize'] > 0:
+        opp = result['records'][0]
+        propensity_score, win_prob, priority, amount = calculate_propensity(opp)
+        try:
+            sf.Opportunity.update(opp_id, {
+                'Propensity_Score__c': propensity_score,
+                'Win_Probability__c': win_prob,
+                'Priority_Level__c': priority
+            })
+            logger.info(f"Updated SFDC for {opp_id}: Propensity={propensity_score}, WinProb={win_prob}, Priority={priority}")
+        except Exception as e:
+            logger.error(f"Failed to update SFDC for {opp_id}: {str(e)}")
+
+def stream_opportunity_changes():
+    """Background thread to listen for Opportunity updates via Streaming API"""
+    def handle_message(message):
+        if message.get('event', {}).get('type') == 'updated':
+            opp_id = message['sobject']['Id']
+            logger.info(f"Detected update for Opportunity {opp_id}")
+            update_opportunity_scores(opp_id)
+
+    # Subscribe to PushTopic (assumes 'OpportunityUpdates' exists in Salesforce)
+    streaming_client.subscribe('/topic/OpportunityUpdates', handle_message)
+    logger.info("Subscribed to OpportunityUpdates PushTopic")
+    
+    # Keep the thread running
+    while True:
+        time.sleep(1)  # Avoid tight loop
+
+# Start streaming in a background thread
+streaming_thread = threading.Thread(target=stream_opportunity_changes, daemon=True)
+streaming_thread.start()
 
 @app.route('/')
 def index():
@@ -171,31 +228,25 @@ def score_opportunities():
     for opp in all_opportunities[:5]:
         logger.info(f"Opportunity {opp['Id']}: StageName={opp['StageName']}, Amount={opp['Amount']}, LastModified={opp['LastModifiedDate']}")
 
+    # Compute scores but don't update here (handled by streaming)
     for opp in all_opportunities:
         propensity_score, win_prob, priority, amount = calculate_propensity(opp)
-        
-        old_propensity = opp.get('Propensity_Score__c', 0) or 0
-        old_win_prob = opp.get('Win_Probability__c', 0) or 0
-        old_priority = opp.get('Priority_Level__c', 'Low Priority') or 'Low Priority'
-        
-        if (propensity_score != old_propensity or 
-            win_prob != old_win_prob or 
-            priority != old_priority):
-            try:
-                sf.Opportunity.update(opp['Id'], {
-                    'Propensity_Score__c': propensity_score,
-                    'Win_Probability__c': win_prob,
-                    'Priority_Level__c': priority
-                })
-                logger.info(f"Updated SFDC for {opp['Id']}: Propensity={propensity_score}, WinProb={win_prob}, Priority={priority}")
-            except Exception as e:
-                logger.error(f"Failed to update SFDC for {opp['Id']}: {str(e)}")
-        
         opp['Propensity_Score__c'] = propensity_score
         opp['Win_Probability__c'] = win_prob
         opp['Priority_Level__c'] = priority
         opp['Amount'] = amount
         logger.debug(f"Scored {opp['Id']}: Propensity={propensity_score}, WinProb={win_prob}")
+
+    # Log tile values
+    logger.info(f"Tile - Total Opportunities: {len(all_opportunities)}")
+    total_pipeline = sum(opp['Amount'] for opp in all_opportunities)
+    logger.info(f"Tile - Total Open Pipeline: ${total_pipeline:,.2f}")
+    avg_propensity = sum(opp['Propensity_Score__c'] for opp in all_opportunities) / len(all_opportunities)
+    logger.info(f"Tile - Avg Propensity Score: {avg_propensity:.2f}")
+    avg_win_prob = sum(opp['Win_Probability__c'] for opp in all_opportunities) / len(all_opportunities)
+    logger.info(f"Tile - Avg Win Probability: {avg_win_prob:.2f}%")
+    top_priority_count = len([opp for opp in all_opportunities if opp['Priority_Level__c'] == 'Top Priority'])
+    logger.info(f"Tile - Top Priority Deals: {top_priority_count}")
 
     page = request.args.get('page', 1, type=int)
     per_page = 10
