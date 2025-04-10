@@ -65,6 +65,16 @@ def format_number(value):
     return "{:,}".format(value)
 
 def calculate_propensity(opportunity):
+    # Fixed values for Closed Won and Closed Lost
+    stage_name = opportunity.get('StageName', 'Prospecting')
+    amount = float(opportunity.get('Amount', 0) or 0)
+    
+    if stage_name == 'Closed Won':
+        return 10.0, 100.0, 'Top Priority', amount  # PTB 10/10, Win Prob 100%
+    elif stage_name == 'Closed Lost':
+        return 0.0, 0.0, 'Low Priority', amount     # PTB 0/10, Win Prob 0%
+    
+    # Scoring model for non-closed stages
     weights = {
         'StageName': 0.5000,          # 50.00%
         'icp_fit__c': 0.0063,         # 0.63%
@@ -82,16 +92,17 @@ def calculate_propensity(opportunity):
     }
     stage_map = {
         'Prospecting': 1, 'Qualification': 2, 'Needs Analysis': 3, 
-        'Proposal': 4, 'Negotiation': 5, 'Closed Won': 6,
-        'Negotiation/Review': 5, 'Id. Decision Makers': 3
+        'Proposal': 4, 'Negotiation': 5, 'Negotiation/Review': 5, 
+        'Id. Decision Makers': 3
     }
     short_list_map = {'Not Considered': 0, 'Likely': 0.5, 'Confirmed': 1}
     timeline_map = {'Not Defined': 0, 'Long Term': 0.5, 'Medium Term': 0.75, 'Short Term': 1}
     
     score = 0
     
-    stage_value = stage_map.get(opportunity.get('StageName', 'Prospecting'), 1)
-    score += (stage_value / 6) * 10 * weights['StageName']
+    # StageName only applies to non-closed stages
+    stage_value = stage_map.get(stage_name, 1)  # Default to 1 if not in map
+    score += (stage_value / 5) * 10 * weights['StageName']  # Scale 1-5 (max 5 for Negotiation)
     
     icp_fit = 1 if opportunity.get('icp_fit__c', False) else 0
     score += icp_fit * 10 * weights['icp_fit__c']
@@ -149,7 +160,6 @@ def calculate_propensity(opportunity):
     
     propensity_score = min(round(score, 2), 10)
     win_prob = min(round(propensity_score * 10, 2), 100)
-    amount = float(opportunity.get('Amount', 0) or 0)
     if win_prob >= 55 and amount >= 500000:
         priority = 'Top Priority'
     elif win_prob >= 40 and win_prob < 55 and amount >= 250000:
@@ -184,7 +194,6 @@ def update_opportunity_scores(opp_id):
 def poll_opportunity_changes():
     """Background thread to poll for recently modified Opportunities"""
     while True:
-        # Poll for Opportunities modified in the last 5 minutes
         five_minutes_ago = (datetime.utcnow() - timedelta(minutes=5)).strftime('%Y-%m-%dT%H:%M:%SZ')
         query = f"""SELECT Id FROM Opportunity WHERE LastModifiedDate >= {five_minutes_ago}"""
         try:
@@ -195,7 +204,7 @@ def poll_opportunity_changes():
                 update_opportunity_scores(opp_id)
         except Exception as e:
             logger.error(f"Polling error: {str(e)}")
-        time.sleep(300)  # Poll every 5 minutes (300 seconds)
+        time.sleep(300)  # Poll every 5 minutes
 
 # Start polling in a background thread
 polling_thread = threading.Thread(target=poll_opportunity_changes, daemon=True)
