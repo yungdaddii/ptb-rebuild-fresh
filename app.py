@@ -70,9 +70,9 @@ def calculate_propensity(opportunity):
     amount = float(opportunity.get('Amount', 0) or 0)
     
     if stage_name == 'Closed Won':
-        return 10.0, 100.0, 'Top Priority', amount  # PTB 10/10, Win Prob 100%
+        return 10.0, 100.0, 'Won Deal', amount  # PTB 10/10, Win Prob 100%
     elif stage_name == 'Closed Lost':
-        return 0.0, 0.0, 'Low Priority', amount     # PTB 0/10, Win Prob 0%
+        return 0.0, 0.0, 'Lost Deal', amount    # PTB 0/10, Win Prob 0%
     
     # Scoring model for non-closed stages
     weights = {
@@ -102,7 +102,7 @@ def calculate_propensity(opportunity):
     
     # StageName only applies to non-closed stages
     stage_value = stage_map.get(stage_name, 1)  # Default to 1 if not in map
-    score += (stage_value / 5) * 10 * weights['StageName']  # Scale 1-5 (max 5 for Negotiation)
+    score += (stage_value / 5) * 10 * weights['StageName']  # Scale 1-5
     
     icp_fit = 1 if opportunity.get('icp_fit__c', False) else 0
     score += icp_fit * 10 * weights['icp_fit__c']
