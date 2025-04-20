@@ -1,5 +1,6 @@
-from flask import Flask, render_template, request, make_response
+from flask import Flask, render_template, request, make_response, jsonify, session
 from simple_salesforce import Salesforce
+from flask_session import Session
 import os
 from datetime import datetime, timedelta
 from collections import defaultdict
@@ -7,14 +8,23 @@ import logging
 import threading
 import time
 from salesforce_bulk import SalesforceBulk
+from langchain.llms import OpenAI
+from langchain.prompts import PromptTemplate
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
+import json
+import uuid
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
+app.config['SESSION_TYPE'] = 'filesystem'
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', str(uuid.uuid4()))
+Session(app)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Salesforce connection (REST API for queries/updates)
+# Salesforce connection
 sf = Salesforce(
     username=os.getenv('SF_USERNAME'),
     password=os.getenv('SF_PASSWORD'),
@@ -23,13 +33,16 @@ sf = Salesforce(
 )
 logger.info("Connected to Salesforce REST API successfully!")
 
-# Salesforce Bulk API for updates
+# Salesforce Bulk API
 bulk = SalesforceBulk(
     username=os.getenv('SF_USERNAME'),
     password=os.getenv('SF_PASSWORD'),
     security_token=os.getenv('SF_TOKEN'),
     host='propensiaai-dev-ed.develop.my.salesforce.com'
 )
+
+# Initialize LLM
+llm = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
 # Custom Jinja2 filters
 def average_filter(values):
@@ -65,44 +78,40 @@ def format_number(value):
     return "{:,}".format(value)
 
 def calculate_propensity(opportunity):
-    # Fixed values for Closed Won and Closed Lost
     stage_name = opportunity.get('StageName', 'Prospecting')
     amount = float(opportunity.get('Amount', 0) or 0)
     
     if stage_name == 'Closed Won':
-        return 10.0, 100.0, 'Won Deal', amount  # PTB 10/10, Win Prob 100%
+        return 10.0, 100.0, 'Won Deal', amount
     elif stage_name == 'Closed Lost':
-        return 0.0, 0.0, 'Lost Deal', amount    # PTB 0/10, Win Prob 0%
+        return 0.0, 0.0, 'Lost Deal', amount
     
-    # Scoring model for non-closed stages
     weights = {
-        'StageName': 0.5000,          # 50.00%
-        'icp_fit__c': 0.0063,         # 0.63%
-        'Engagement_Score__c': 0.0063,# 0.63%
-        'Intent_Data__c': 0.0063,     # 0.63%
-        'Past_Success__c': 0.0625,    # 6.25%
-        'Total_Sales_Touches__c': 0.0625, # 6.25%
-        'Number_of_Meetings__c': 0.0625,  # 6.25%
-        'Contacts_Associated__c': 0.0625, # 6.25%
-        'Budget_Defined__c': 0.0125,  # 1.25%
-        'Need_Defined__c': 0.0313,    # 3.13%
-        'Timeline_Defined__c': 0.0313,# 3.13%
-        'Short_List_Defined__c': 0.0938, # 9.38%
-        'High_Intent__c': 0.0625      # 6.25%
+        'StageName': 0.5000,
+        'icp_fit__c': 0.0063,
+        'Engagement_Score__c': 0.0063,
+        'Intent_Data__c': 0.0063,
+        'Past_Success__c': 0.0625,
+        'Total_Sales_Touches__c': 0.0625,
+        'Number_of_Meetings__c': 0.0625,
+        'Contacts_Associated__c': 0.0625,
+        'Budget_Defined__c': 0.0125,
+        'Need_Defined__c': 0.0313,
+        'Timeline_Defined__c': 0.0313,
+        'Short_List_Defined__c': 0.0938,
+        'High_Intent__c': 0.0625
     }
     stage_map = {
-        'Prospecting': 1, 'Qualification': 2, 'Needs Analysis': 3, 
-        'Proposal': 4, 'Negotiation': 5, 'Negotiation/Review': 5, 
+        'Prospecting': 1, 'Qualification': 2, 'Needs Analysis': 3,
+        'Proposal': 4, 'Negotiation': 5, 'Negotiation/Review': 5,
         'Id. Decision Makers': 3
     }
     short_list_map = {'Not Considered': 0, 'Likely': 0.5, 'Confirmed': 1}
     timeline_map = {'Not Defined': 0, 'Long Term': 0.5, 'Medium Term': 0.75, 'Short Term': 1}
     
     score = 0
-    
-    # StageName only applies to non-closed stages
-    stage_value = stage_map.get(stage_name, 1)  # Default to 1 if not in map
-    score += (stage_value / 5) * 10 * weights['StageName']  # Scale 1-5
+    stage_value = stage_map.get(stage_name, 1)
+    score += (stage_value / 5) * 10 * weights['StageName']
     
     icp_fit = 1 if opportunity.get('icp_fit__c', False) else 0
     score += icp_fit * 10 * weights['icp_fit__c']
@@ -172,10 +181,9 @@ def calculate_propensity(opportunity):
     return propensity_score, win_prob, priority, amount
 
 def update_opportunity_scores(opp_id):
-    """Update scores for a single opportunity"""
-    query = f"""SELECT Id, Name, Amount, StageName, icp_fit__c, Engagement_Score__c, Intent_Data__c, 
-                Past_Success__c, Total_Sales_Touches__c, Number_of_Meetings__c, Contacts_Associated__c, 
-                Budget_Defined__c, Need_Defined__c, Timeline_Defined__c, Short_List_Defined__c, 
+    query = f"""SELECT Id, Name, Amount, StageName, icp_fit__c, Engagement_Score__c, Intent_Data__c,
+                Past_Success__c, Total_Sales_Touches__c, Number_of_Meetings__c, Contacts_Associated__c,
+                Budget_Defined__c, Need_Defined__c, Timeline_Defined__c, Short_List_Defined__c,
                 High_Intent__c FROM Opportunity WHERE Id = '{opp_id}'"""
     result = sf.query(query)
     if result['totalSize'] > 0:
@@ -191,8 +199,96 @@ def update_opportunity_scores(opp_id):
         except Exception as e:
             logger.error(f"Failed to update SFDC for {opp_id}: {str(e)}")
 
+def generate_follow_up_emails():
+    """AI Agent: Generate follow-up emails for Prospecting Opportunities not contacted in 7 days"""
+    seven_days_ago = (datetime.utcnow() - timedelta(days=7)).strftime('%Y-%m-%dT%H:%M:%SZ')
+    query = f"""
+        SELECT Id, Name, Amount, Account.Name, LastActivityDate,
+        (SELECT Contact.Name, Contact.Email FROM OpportunityContactRoles)
+        FROM Opportunity
+        WHERE StageName = 'Prospecting' AND (LastActivityDate <= {seven_days_ago} OR LastActivityDate IS NULL)
+    """
+    result = sf.query(query)
+    opportunities = result['records']
+    
+    email_drafts = []
+    
+    for opp in opportunities:
+        opp_id = opp['Id']
+        opp_name = opp['Name']
+        amount = opp.get('Amount', 0)
+        account_name = opp['Account']['Name']
+        
+        contacts = opp.get('OpportunityContactRoles', {}).get('records', [])
+        for contact in contacts:
+            contact_name = contact['Contact']['Name']
+            contact_email = contact['Contact']['Email']
+            if contact_email:
+                prompt = PromptTemplate(
+                    input_variables=["contact_name", "opp_name", "account_name", "amount"],
+                    template="""
+                    Write a concise, professional follow-up email to {contact_name} from a sales rep at Propensia AI.
+                    Reference {account_name}'s Opportunity ({opp_name}) for ${amount:,.2f}.
+                    Emphasize how Propensia AI's predictive analytics can solve their sales challenges.
+                    Request a meeting within 24-72 hours. Use a friendly tone and clear call-to-action.
+                    """
+                )
+                email_content = llm(prompt.format(
+                    contact_name=contact_name,
+                    opp_name=opp_name,
+                    account_name=account_name,
+                    amount=amount
+                ))
+                
+                email_drafts.append({
+                    'OpportunityId': opp_id,
+                    'ContactName': contact_name,
+                    'ContactEmail': contact_email,
+                    'AccountName': account_name,
+                    'OpportunityName': opp_name,
+                    'Amount': amount,
+                    'EmailDraft': email_content
+                })
+    
+    if email_drafts:
+        with open('email_drafts.json', 'w') as f:
+            json.dump(email_drafts, f, indent=2)
+        session['email_drafts'] = email_drafts
+        logger.info(f"Generated {len(email_drafts)} email drafts")
+    else:
+        logger.info("No Opportunities meet follow-up criteria")
+    
+    return email_drafts
+
+def send_approved_emails(approved_emails):
+    """AI Agent: Send approved emails to Contacts"""
+    sendgrid_client = SendGridAPIClient(os.getenv('SENDGRID_API_KEY'))
+    
+    for email in approved_emails:
+        opp_id = email['OpportunityId']
+        contact_email = email['ContactEmail']
+        email_content = email['EmailDraft']
+        
+        message = Mail(
+            from_email='sales@propensia.ai',
+            to_emails=contact_email,
+            subject=f"Follow-Up: {email['AccountName']} Opportunity",
+            plain_text_content=email_content
+        )
+        
+        try:
+            response = sendgrid_client.send(message)
+            logger.info(f"Sent email to {contact_email} for Opportunity {opp_id}: Status {response.status_code}")
+            sf.Opportunity.update(opp_id, {
+                'Last_Email_Sent__c': datetime.utcnow().isoformat()
+            })
+        except Exception as e:
+            logger.error(f"Failed to send email to {contact_email}: {str(e)}")
+    
+    logger.info(f"Completed sending {len(approved_emails)} emails")
+    session.pop('email_drafts', None)
+
 def poll_opportunity_changes():
-    """Background thread to poll for recently modified Opportunities"""
     while True:
         five_minutes_ago = (datetime.utcnow() - timedelta(minutes=5)).strftime('%Y-%m-%dT%H:%M:%SZ')
         query = f"""SELECT Id FROM Opportunity WHERE LastModifiedDate >= {five_minutes_ago}"""
@@ -204,9 +300,9 @@ def poll_opportunity_changes():
                 update_opportunity_scores(opp_id)
         except Exception as e:
             logger.error(f"Polling error: {str(e)}")
-        time.sleep(300)  # Poll every 5 minutes
+        time.sleep(300)
 
-# Start polling in a background thread
+# Start polling thread
 polling_thread = threading.Thread(target=poll_opportunity_changes, daemon=True)
 polling_thread.start()
 
@@ -216,12 +312,12 @@ def index():
 
 @app.route('/score_opps')
 def score_opportunities():
-    all_query = """SELECT Id, Name, Amount, StageName, CloseDate, LastModifiedDate, 
-                   icp_fit__c, Engagement_Score__c, Intent_Data__c, Past_Success__c, 
-                   Total_Sales_Touches__c, Number_of_Meetings__c, Contacts_Associated__c, 
-                   Budget_Defined__c, Need_Defined__c, Timeline_Defined__c, 
+    all_query = """SELECT Id, Name, Amount, StageName, CloseDate, LastModifiedDate,
+                   icp_fit__c, Engagement_Score__c, Intent_Data__c, Past_Success__c,
+                   Total_Sales_Touches__c, Number_of_Meetings__c, Contacts_Associated__c,
+                   Budget_Defined__c, Need_Defined__c, Timeline_Defined__c,
                    Short_List_Defined__c, High_Intent__c,
-                   Propensity_Score__c, Win_Probability__c, Priority_Level__c 
+                   Propensity_Score__c, Win_Probability__c, Priority_Level__c
                    FROM Opportunity"""
     all_result = sf.query_all(all_query)
     all_opportunities = all_result['records']
@@ -230,7 +326,6 @@ def score_opportunities():
     for opp in all_opportunities[:5]:
         logger.info(f"Opportunity {opp['Id']}: StageName={opp['StageName']}, Amount={opp['Amount']}, LastModified={opp['LastModifiedDate']}")
 
-    # Compute scores for display only (updates handled by polling)
     for opp in all_opportunities:
         propensity_score, win_prob, priority, amount = calculate_propensity(opp)
         opp['Propensity_Score__c'] = propensity_score
@@ -239,7 +334,6 @@ def score_opportunities():
         opp['Amount'] = amount
         logger.debug(f"Scored {opp['Id']}: Propensity={propensity_score}, WinProb={win_prob}")
 
-    # Log tile values
     logger.info(f"Tile - Total Opportunities: {len(all_opportunities)}")
     total_pipeline = sum(opp['Amount'] for opp in all_opportunities)
     logger.info(f"Tile - Total Open Pipeline: ${total_pipeline:,.2f}")
@@ -294,6 +388,41 @@ def score_opportunities():
     response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = '0'
     return response
+
+@app.route('/ai_agents')
+def ai_agents():
+    initiatives = [
+        {
+            'id': 1,
+            'name': 'Follow up with Stage 1 Opportunities',
+            'description': 'Send follow-up emails to Contacts of Prospecting Opportunities not contacted in the last 7 days. Emails emphasize Propensia AI’s value and request a meeting within 24-72 hours.'
+        }
+        # Add more initiatives here
+    ]
+    return render_template('ai_agents.html', initiatives=initiatives)
+
+@app.route('/run_initiative/<int:init_id>', methods=['GET'])
+def run_initiative(init_id):
+    if init_id == 1:
+        email_drafts = generate_follow_up_emails()
+        if not email_drafts:
+            return render_template('ai_agents.html', initiatives=[{'id': 1, 'name': 'Follow up with Stage 1 Opportunities', 'description': '...'}], message="No Opportunities meet the criteria.")
+        return render_template('preview_emails.html', email_drafts=email_drafts, initiative_id=init_id)
+    return jsonify({'status': 'error', 'message': 'Invalid initiative ID'})
+
+@app.route('/approve_emails/<int:init_id>', methods=['POST'])
+def approve_emails(init_id):
+    if init_id != 1:
+        return jsonify({'status': 'error', 'message': 'Invalid initiative ID'})
+    
+    selected_emails = request.form.getlist('selected_emails')
+    email_drafts = session.get('email_drafts', [])
+    approved_emails = [email for email in email_drafts if email['ContactEmail'] in selected_emails]
+    
+    if approved_emails:
+        send_approved_emails(approved_emails)
+        return jsonify({'status': 'success', 'message': f'Sent {len(approved_emails)} emails'})
+    return jsonify({'status': 'error', 'message': 'No emails selected'})
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)

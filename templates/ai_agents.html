@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Agents - Propensia AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Propensia AI - AI Agents</h1>
+        <nav>
+            <a href="{{ url_for('index') }}">Home</a>
+            <a href="{{ url_for('score_opportunities') }}">Opportunity Scores</a>
+            <a href="{{ url_for('ai_agents') }}">AI Agents</a>
+        </nav>
+    </header>
+    <main>
+        <h2>Automated Tasks</h2>
+        {% if message %}
+            <p style="color: red;">{{ message }}</p>
+        {% endif %}
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Initiative</th>
+                    <th>Description</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for initiative in initiatives %}
+                <tr>
+                    <td>{{ initiative.name }}</td>
+                    <td>{{ initiative.description }}</td>
+                    <td>
+                        <a href="{{ url_for('run_initiative', init_id=initiative.id) }}" class="btn">Run</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </main>
+</body>
+</html>

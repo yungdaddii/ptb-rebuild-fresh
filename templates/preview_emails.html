@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview Emails - Propensia AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Propensia AI - Preview Emails</h1>
+        <nav>
+            <a href="{{ url_for('index') }}">Home</a>
+            <a href="{{ url_for('score_opportunities') }}">Opportunity Scores</a>
+            <a href="{{ url_for('ai_agents') }}">AI Agents</a>
+        </nav>
+    </header>
+    <main>
+        <h2>Preview Email Drafts</h2>
+        <form action="{{ url_for('approve_emails', init_id=initiative_id) }}" method="POST">
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>Select</th>
+                        <th>Contact Name</th>
+                        <th>Email</th>
+                        <th>Account</th>
+                        <th>Opportunity</th>
+                        <th>Amount</th>
+                        <th>Email Draft</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for draft in email_drafts %}
+                    <tr>
+                        <td><input type="checkbox" name="selected_emails" value="{{ draft.ContactEmail }}" checked></td>
+                        <td>{{ draft.ContactName }}</td>
+                        <td>{{ draft.ContactEmail }}</td>
+                        <td>{{ draft.AccountName }}</td>
+                        <td>{{ draft.OpportunityName }}</td>
+                        <td>${{ draft.Amount | format_number }}</td>
+                        <td><pre>{{ draft.EmailDraft }}</pre></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <button type="submit" class="btn">Approve and Send</button>
+            <a href="{{ url_for('ai_agents') }}" class="btn">Cancel</a>
+        </form>
+    </main>
+</body>
+</html>

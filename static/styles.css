@@ -1,0 +1,168 @@
+cd ~/Desktop/ptb-rebuild-fresh
+mkdir -p static
+cat > static/styles.css << 'EOF'
+/* Reset default styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f9f9f9;
+}
+
+/* Header (Propensia AI blue theme) */
+header {
+    background-color: #007bff;
+    color: white;
+    padding: 1rem;
+    text-align: center;
+}
+
+header h1 {
+    margin-bottom: 0.5rem;
+}
+
+/* Navigation */
+nav {
+    margin-top: 0.5rem;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin: 0 1rem;
+    font-weight: bold;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
+/* Main Content */
+main {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+h2 {
+    margin-bottom: 1rem;
+    color: #007bff;
+}
+
+/* Tables (matches Opportunity dashboard) */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+th, td {
+    padding: 10px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+/* Buttons (matches existing buttons) */
+.btn {
+    display: inline-block;
+    padding: 8px 16px;
+    margin: 5px;
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background-color: #0056b3;
+}
+
+/* Forms */
+form {
+    margin-top: 1rem;
+}
+
+input[type="checkbox"] {
+    margin-right: 0.5rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    nav a {
+        display: block;
+        margin: 0.5rem 0;
+    }
+
+    table {
+        font-size: 0.9rem;
+    }
+
+    .btn {
+        padding: 6px 12px;
+    }
+}
+
+/* Opportunity Dashboard (score_opps.html) */
+#opportunity-table th, #opportunity-table td {
+    padding: 12px;
+}
+
+#opportunity-table th {
+    background-color: #e9ecef;
+}
+
+/* Error Messages */
+p[style*="color: red"] {
+    background-color: #ffe6e6;
+    padding: 0.5rem;
+    border-radius: 4px;
+}
+
+/* AI Agents Specific Styles (ai_agents.html, preview_emails.html) */
+.ai-table {
+    margin-bottom: 2rem;
+}
+
+.ai-table td pre {
+    white-space: pre-wrap;
+    max-width: 400px;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+    .ai-table td pre {
+        max-width: 200px;
+    }
+}
+
+.ai-btn {
+    background-color: #007bff; /* Matches primary theme color */
+}
+
+.ai-btn:hover {
+    background-color: #0056b3;
+}
+
+.ai-btn.cancel {
+    background-color: #dc3545;
+}
+
+.ai-btn.cancel:hover {
+    background-color: #c82333;
+}
+EOF
