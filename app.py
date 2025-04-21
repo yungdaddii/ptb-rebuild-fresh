@@ -8,7 +8,7 @@ import logging
 import threading
 import time
 from salesforce_bulk import SalesforceBulk
-from langchain.llms import OpenAI
+from langchain_community.llms import OpenAI
 from langchain.prompts import PromptTemplate
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
@@ -426,3 +426,4 @@ def approve_emails(init_id):
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
+EOF
