@@ -8,7 +8,7 @@ import logging
 import threading
 import time
 from salesforce_bulk import SalesforceBulk
-from langchain_community.llms import OpenAI
+from langchain_openai import OpenAI
 from langchain.prompts import PromptTemplate
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
@@ -42,7 +42,7 @@ bulk = SalesforceBulk(
 )
 
 # Initialize LLM
-llm = OpenAI(openai_api_key=os.getenv('OPENAI_API_KEY'))
+llm = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
 # Custom Jinja2 filters
 def average_filter(values):
