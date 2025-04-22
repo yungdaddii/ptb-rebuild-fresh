@@ -42,7 +42,7 @@ bulk = SalesforceBulk(
 )
 
 # Initialize LLM
-llm = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+llm = OpenAI(openai_api_key=os.getenv('OPENAI_API_KEY'))
 
 # Custom Jinja2 filters
 def average_filter(values):
@@ -233,7 +233,7 @@ def generate_follow_up_emails():
                     Request a meeting within 24-72 hours. Use a friendly tone and clear call-to-action.
                     """
                 )
-                email_content = llm(prompt.format(
+                email_content = llm.invoke(prompt.format(
                     contact_name=contact_name,
                     opp_name=opp_name,
                     account_name=account_name,
