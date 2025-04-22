@@ -406,7 +406,7 @@ def ai_agents():
         {
             'id': 1,
             'name': 'Follow up with Stage 1 Opportunities',
-            'description': 'Send follow-up emails to Contacts of Prospecting Opportunities not contacted in the last 7 days. Emails emphasize Propensia AI's value and request a meeting within 24-72 hours.'
+            'description': 'Send follow-up emails to Contacts of Prospecting Opportunities not contacted in the last 7 days. Emails emphasize Propensia AI\'s value and request a meeting within 24-72 hours.'
         }
         # Add more initiatives here
     ]
