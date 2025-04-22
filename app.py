@@ -42,7 +42,14 @@ bulk = SalesforceBulk(
 )
 
 # Initialize LLM
-llm = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+llm = None
+if os.getenv('OPENAI_API_KEY'):
+    try:
+        llm = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+        logger.info("OpenAI initialized successfully!")
+    except Exception as e:
+        logger.warning(f"Failed to initialize OpenAI: {str(e)}")
+        logger.warning("Email generation features will be disabled")
 
 # Custom Jinja2 filters
 def average_filter(values):
@@ -201,6 +208,10 @@ def update_opportunity_scores(opp_id):
 
 def generate_follow_up_emails():
     """AI Agent: Generate follow-up emails for Prospecting Opportunities not contacted in 7 days"""
+    if not llm:
+        logger.warning("OpenAI not initialized. Skipping email generation.")
+        return []
+    
     seven_days_ago = (datetime.utcnow() - timedelta(days=7)).strftime('%Y-%m-%dT%H:%M:%SZ')
     query = f"""
         SELECT Id, Name, Amount, Account.Name, LastActivityDate,
@@ -395,7 +406,7 @@ def ai_agents():
         {
             'id': 1,
             'name': 'Follow up with Stage 1 Opportunities',
-            'description': 'Send follow-up emails to Contacts of Prospecting Opportunities not contacted in the last 7 days. Emails emphasize Propensia AI’s value and request a meeting within 24-72 hours.'
+            'description': 'Send follow-up emails to Contacts of Prospecting Opportunities not contacted in the last 7 days. Emails emphasize Propensia AI's value and request a meeting within 24-72 hours.'
         }
         # Add more initiatives here
     ]
