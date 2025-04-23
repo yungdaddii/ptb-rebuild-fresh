@@ -7,51 +7,19 @@
         height: 100%;
         display: flex;
         flex-direction: column;
-        background: linear-gradient(45deg, #1a1a1a, #2a2a2a);
-        border: none;
-        box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-        transition: transform 0.3s ease;
-    }
-    .crm-widget:hover {
-        transform: translateY(-5px);
     }
     .crm-widget .card-body {
         flex: 1;
         display: flex;
         flex-direction: column;
-        padding: 0;
     }
     .crm-widget .py-4 {
         flex: 1;
         display: flex;
         flex-direction: column;
-        padding: 1.5rem;
     }
     .crm-widget .d-flex {
         flex: 1;
-    }
-    .crm-widget h5 {
-        color: #8b8b8b;
-        font-size: 0.9rem;
-        margin-bottom: 1rem;
-    }
-    .crm-widget h2 {
-        color: #fff;
-        font-size: 1.8rem;
-        font-weight: 600;
-    }
-    .crm-widget i {
-        color: #4a4a4a;
-        font-size: 2.5rem;
-    }
-    .crm-widget .text-success {
-        color: #00ff9d !important;
-    }
-    .crm-widget .text-danger {
-        color: #ff4d4d !important;
-    }
-    .row.g-3 {
-        margin-bottom: 2rem;
     }
 </style>
 <div class="main-content">
@@ -76,10 +44,10 @@
                     <div class="card crm-widget">
                         <div class="card-body p-0">
                             <div class="py-4 px-3">
-                                <h5 class="text-uppercase">Total Opportunities <i class="ri-arrow-up-circle-line text-success float-end"></i></h5>
+                                <h5 class="text-muted text-uppercase fs-13">Total Opportunities <i class="ri-arrow-up-circle-line text-success fs-18 float-end align-middle"></i></h5>
                                 <div class="d-flex align-items-center">
                                     <div class="flex-shrink-0">
-                                        <i class="ri-line-chart-line"></i>
+                                        <i class="ri-line-chart-line display-6 text-muted"></i>
                                     </div>
                                     <div class="flex-grow-1 ms-3">
                                         <h2 class="mb-0"><span class="counter-value" data-target="{{ all_opportunities|length }}">{{ all_opportunities|length|format_number }}</span></h2>
@@ -93,10 +61,10 @@
                     <div class="card crm-widget">
                         <div class="card-body p-0">
                             <div class="py-4 px-3">
-                                <h5 class="text-uppercase">Total Open Pipeline <i class="ri-arrow-up-circle-line text-success float-end"></i></h5>
+                                <h5 class="text-muted text-uppercase fs-13">Total Open Pipeline <i class="ri-arrow-up-circle-line text-success fs-18 float-end align-middle"></i></h5>
                                 <div class="d-flex align-items-center">
                                     <div class="flex-shrink-0">
-                                        <i class="ri-exchange-dollar-line"></i>
+                                        <i class="ri-exchange-dollar-line display-6 text-muted"></i>
                                     </div>
                                     <div class="flex-grow-1 ms-3">
                                         <h2 class="mb-0">$<span class="counter-value" data-target="{{ all_opportunities | sum(attribute='Amount') | int }}">{{ all_opportunities | sum(attribute='Amount') | int | format_large_number }}</span></h2>
@@ -110,10 +78,10 @@
                     <div class="card crm-widget">
                         <div class="card-body p-0">
                             <div class="py-4 px-3">
-                                <h5 class="text-uppercase">Avg Propensity Score <i class="ri-arrow-down-circle-line text-danger float-end"></i></h5>
+                                <h5 class="text-muted text-uppercase fs-13">Avg Propensity Score <i class="ri-arrow-down-circle-line text-danger fs-18 float-end align-middle"></i></h5>
                                 <div class="d-flex align-items-center">
                                     <div class="flex-shrink-0">
-                                        <i class="ri-pulse-line"></i>
+                                        <i class="ri-pulse-line display-6 text-muted"></i>
                                     </div>
                                     <div class="flex-grow-1 ms-3">
                                         <h2 class="mb-0"><span class="counter-value" data-target="{{ (all_opportunities | map(attribute='Propensity_Score__c') | list | average) | round(2) | default(0) }}">{{ (all_opportunities | map(attribute='Propensity_Score__c') | list | average) | round(2) | default(0) }}</span></h2>
@@ -127,10 +95,10 @@
                     <div class="card crm-widget">
                         <div class="card-body p-0">
                             <div class="py-4 px-3">
-                                <h5 class="text-uppercase">Avg Win Probability <i class="ri-arrow-up-circle-line text-success float-end"></i></h5>
+                                <h5 class="text-muted text-uppercase fs-13">Avg Win Probability <i class="ri-arrow-up-circle-line text-success fs-18 float-end align-middle"></i></h5>
                                 <div class="d-flex align-items-center">
                                     <div class="flex-shrink-0">
-                                        <i class="ri-trophy-line"></i>
+                                        <i class="ri-trophy-line display-6 text-muted"></i>
                                     </div>
                                     <div class="flex-grow-1 ms-3">
                                         <h2 class="mb-0"><span class="counter-value" data-target="{{ (all_opportunities | map(attribute='Win_Probability__c') | list | average) | round(2) | default(0) }}">{{ (all_opportunities | map(attribute='Win_Probability__c') | list | average) | round(2) | default(0) }}</span>%</h2>
@@ -144,10 +112,10 @@
                     <div class="card crm-widget">
                         <div class="card-body p-0">
                             <div class="py-4 px-3">
-                                <h5 class="text-uppercase">Top Priority Deals <i class="ri-arrow-up-circle-line text-success float-end"></i></h5>
+                                <h5 class="text-muted text-uppercase fs-13">Top Priority Deals <i class="ri-arrow-up-circle-line text-success fs-18 float-end align-middle"></i></h5>
                                 <div class="d-flex align-items-center">
                                     <div class="flex-shrink-0">
-                                        <i class="ri-service-line"></i>
+                                        <i class="ri-service-line display-6 text-muted"></i>
                                     </div>
                                     <div class="flex-grow-1 ms-3">
                                         <h2 class="mb-0"><span class="counter-value" data-target="{{ all_opportunities | selectattr('Priority_Level__c', 'equalto', 'Top Priority') | list | length }}">{{ all_opportunities | selectattr('Priority_Level__c', 'equalto', 'Top Priority') | list | length | format_number }}</span></h2>
