@@ -231,6 +231,7 @@
                                             <th scope="col" style="width: 12%;">Amount</th>
                                             <th scope="col" style="width: 12%;">Propensity Score</th>
                                             <th scope="col" style="width: 12%;">Win Probability</th>
+                                            <th scope="col" style="width: 12%;">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -247,6 +248,38 @@
                                             <td>${{ opp['Amount']|int|default(0, true)|format_number }}</td>
                                             <td>{{ opp['Propensity_Score__c']|round(2)|default(0) }}</td>
                                             <td>{{ opp['Win_Probability__c']|round(2)|default(0) }}%</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#nextSteps{{ loop.index }}" aria-expanded="false" aria-controls="nextSteps{{ loop.index }}">
+                                                    <i class="ri-arrow-down-s-line"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="8" class="p-0">
+                                                <div class="collapse" id="nextSteps{{ loop.index }}">
+                                                    <div class="card card-body border-0">
+                                                        <h6 class="mb-3">Recommended Next Steps</h6>
+                                                        <div class="row">
+                                                            {% for step in opp.next_steps %}
+                                                            <div class="col-md-6 mb-3">
+                                                                <div class="card h-100">
+                                                                    <div class="card-body">
+                                                                        <div class="d-flex align-items-center mb-2">
+                                                                            <i class="{{ step.icon }} fs-4 me-2"></i>
+                                                                            <h6 class="card-title mb-0">{{ step.action }}</h6>
+                                                                            <span class="badge ms-2 {% if step.priority == 'High' %}bg-danger{% else %}bg-warning{% endif %}">
+                                                                                {{ step.priority }}
+                                                                            </span>
+                                                                        </div>
+                                                                        <p class="card-text text-muted">{{ step.description }}</p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            {% endfor %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
                                         </tr>
                                         {% endfor %}
                                     </tbody>

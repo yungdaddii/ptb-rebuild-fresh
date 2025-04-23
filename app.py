@@ -383,6 +383,10 @@ def score_opportunities():
     close_dates = sorted(pipeline_by_close_date.keys())
     close_date_values = [pipeline_by_close_date[date] for date in close_dates]
 
+    # Add next steps to each opportunity
+    for opp in all_opportunities:
+        opp['next_steps'] = generate_next_steps(opp)
+
     response = make_response(render_template(
         'score_opps.html',
         opportunities=paginated_opportunities,
@@ -438,6 +442,126 @@ def approve_emails(init_id):
         send_approved_emails(approved_emails)
         return jsonify({'status': 'success', 'message': f'Sent {len(approved_emails)} emails'})
     return jsonify({'status': 'error', 'message': 'No emails selected'})
+
+def generate_next_steps(opportunity):
+    """Generate next steps recommendations based on opportunity's propensity score and priority.
+    
+    Args:
+        opportunity (dict): The opportunity data including propensity score and priority
+        
+    Returns:
+        list: List of recommended next steps
+    """
+    propensity_score = opportunity.get('Propensity_Score__c', 0)
+    priority = opportunity.get('Priority_Level__c', 'Low Priority')
+    stage = opportunity.get('StageName', 'Prospecting')
+    
+    recommendations = []
+    
+    # High propensity opportunities (8-10)
+    if propensity_score >= 8:
+        recommendations.append({
+            'action': 'Schedule Executive Meeting',
+            'description': 'Arrange a meeting with key decision makers to discuss final terms and close the deal',
+            'priority': 'High',
+            'icon': 'ri-calendar-check-line'
+        })
+        recommendations.append({
+            'action': 'Prepare Final Proposal',
+            'description': 'Create a comprehensive proposal with pricing, timeline, and implementation details',
+            'priority': 'High',
+            'icon': 'ri-file-text-line'
+        })
+    # Medium-high propensity (6-7.9)
+    elif propensity_score >= 6:
+        recommendations.append({
+            'action': 'Deepen Stakeholder Engagement',
+            'description': 'Schedule meetings with additional stakeholders to build consensus',
+            'priority': 'High',
+            'icon': 'ri-team-line'
+        })
+        recommendations.append({
+            'action': 'Address Objections',
+            'description': 'Document and address any remaining objections or concerns',
+            'priority': 'Medium',
+            'icon': 'ri-question-answer-line'
+        })
+    # Medium propensity (4-5.9)
+    elif propensity_score >= 4:
+        recommendations.append({
+            'action': 'Validate Budget & Timeline',
+            'description': 'Confirm budget availability and project timeline with key stakeholders',
+            'priority': 'High',
+            'icon': 'ri-money-dollar-circle-line'
+        })
+        recommendations.append({
+            'action': 'Schedule Product Demo',
+            'description': 'Arrange a detailed product demonstration for the decision team',
+            'priority': 'Medium',
+            'icon': 'ri-presentation-line'
+        })
+    # Low propensity (<4)
+    else:
+        recommendations.append({
+            'action': 'Qualify Opportunity',
+            'description': 'Schedule discovery call to understand needs and budget',
+            'priority': 'High',
+            'icon': 'ri-question-line'
+        })
+        recommendations.append({
+            'action': 'Build Initial Relationship',
+            'description': 'Connect with key stakeholders and share relevant content',
+            'priority': 'Medium',
+            'icon': 'ri-user-add-line'
+        })
+    
+    # Add stage-specific recommendations
+    if stage == 'Prospecting':
+        recommendations.append({
+            'action': 'Initial Discovery',
+            'description': 'Schedule discovery call to understand business needs and challenges',
+            'priority': 'High',
+            'icon': 'ri-search-line'
+        })
+    elif stage == 'Qualification':
+        recommendations.append({
+            'action': 'Validate Decision Process',
+            'description': 'Document decision makers, process, and timeline',
+            'priority': 'High',
+            'icon': 'ri-flow-chart'
+        })
+    elif stage == 'Needs Analysis':
+        recommendations.append({
+            'action': 'Deep Dive Discovery',
+            'description': 'Conduct detailed needs analysis with key stakeholders',
+            'priority': 'High',
+            'icon': 'ri-file-search-line'
+        })
+    elif stage == 'Proposal':
+        recommendations.append({
+            'action': 'Review Proposal',
+            'description': 'Schedule proposal review session with decision makers',
+            'priority': 'High',
+            'icon': 'ri-file-list-line'
+        })
+    elif stage == 'Negotiation':
+        recommendations.append({
+            'action': 'Finalize Terms',
+            'description': 'Address any remaining negotiation points',
+            'priority': 'High',
+            'icon': 'ri-handshake-line'
+        })
+    
+    # Add priority-specific recommendations
+    if priority == 'Top Priority':
+        recommendations.append({
+            'action': 'Executive Sponsorship',
+            'description': 'Engage executive sponsor to help accelerate the deal',
+            'priority': 'High',
+            'icon': 'ri-user-star-line'
+        })
+    
+    return recommendations
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
