@@ -396,7 +396,8 @@ def score_opportunities():
         closed_won_total=closed_won_total,
         close_dates=close_dates,
         close_date_values=close_date_values,
-        pipeline_by_stage=pipeline_by_stage
+        pipeline_by_stage=pipeline_by_stage,
+        pipeline_by_close_date=pipeline_by_close_date
     ))
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
     response.headers['Pragma'] = 'no-cache'
