@@ -1,45 +1,7 @@
-{% extends "partials/base.html" %}
+{% extends "base.html" %}
 {% block title %}Score Opportunities{% endblock %}
 {% block content %}
-<style>
-    .dashboard-wrapper {
-        padding-left: 25px; /* Match main-content margin-left */
-        padding-right: 15px; /* Match right padding */
-    }
-    .crm-widget, .card {
-        width: 100%;
-        margin: 15px 0; /* Vertical spacing */
-        padding: 0;
-    }
-    .crm-widget .row, .card .row {
-        width: 100%;
-        margin: 0;
-    }
-    .crm-widget .col, .card .col-xl-6, .card .col-xl-12 {
-        flex: 1 1 20%; /* Equal width for 5 tiles in top row */
-        min-width: 0;
-        padding: 1rem;
-    }
-    .card .col-xl-6 {
-        flex: 0 0 50%; /* Ensure charts stay 50% width */
-        max-width: 50%;
-    }
-    .card .col-xl-12 {
-        flex: 0 0 100%; /* Ensure table stays full width */
-        max-width: 100%;
-    }
-    .crm-widget h2, .card h2 {
-        font-size: 1.6rem;
-        margin-bottom: 0.5rem;
-    }
-    .crm-widget .py-4, .card .py-4 {
-        padding-top: 1rem !important;
-        padding-bottom: 1rem !important;
-    }
-    .badge-black-text {
-        color: #000000 !important; /* Black font for priority badges */
-    }
-</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/score-opps.css') }}">
 <div class="main-content">
     <div class="page-content">
         <div class="dashboard-wrapper">
@@ -257,7 +219,7 @@
                                         <tr>
                                             <td colspan="8" class="p-0">
                                                 <div class="collapse" id="nextSteps{{ loop.index }}">
-                                                    <div class="card card-body border-0">
+                                                    <div class="next-steps-card">
                                                         <h6 class="mb-3">Recommended Next Steps</h6>
                                                         <div class="row">
                                                             {% for step in opp.next_steps %}
@@ -265,7 +227,7 @@
                                                                 <div class="card h-100">
                                                                     <div class="card-body">
                                                                         <div class="d-flex align-items-center mb-2">
-                                                                            <i class="{{ step.icon }} fs-4 me-2"></i>
+                                                                            <i class="{{ step.icon }} fs-4 me-2 text-primary"></i>
                                                                             <h6 class="card-title mb-0">{{ step.action }}</h6>
                                                                             <span class="badge ms-2 {% if step.priority == 'High' %}bg-danger{% else %}bg-warning{% endif %}">
                                                                                 {{ step.priority }}

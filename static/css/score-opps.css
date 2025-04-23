@@ -1,0 +1,92 @@
+.dashboard-wrapper {
+    padding: 2rem;
+    background-color: #f8f9fa;
+}
+
+.crm-widget, .card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.crm-widget:hover, .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.crm-widget .row, .card .row {
+    margin: 0;
+}
+
+.crm-widget .col, .card .col-xl-6, .card .col-xl-12 {
+    padding: 1rem;
+}
+
+.crm-widget h2, .card h2 {
+    font-size: 1.75rem;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+
+.badge-black-text {
+    color: #2c3e50 !important;
+    font-weight: 500;
+}
+
+.table-responsive {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.table thead th {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #e9ecef;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    padding: 1rem;
+}
+
+.table td {
+    vertical-align: middle;
+    padding: 1rem;
+}
+
+.next-steps-card {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 0.5rem;
+}
+
+.next-steps-card h6 {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+}
+
+.next-steps-card .card {
+    background-color: white;
+    margin-bottom: 0.75rem;
+}
+
+.pagination {
+    margin-top: 1.5rem;
+}
+
+.page-link {
+    color: #3498db;
+    border: 1px solid #e9ecef;
+    padding: 0.5rem 1rem;
+}
+
+.page-item.active .page-link {
+    background-color: #3498db;
+    border-color: #3498db;
+} 

@@ -5,3 +5,212 @@ Website: https://themesbrand.com/
 Contact: support@themesbrand.com
 File: Custom Css File
 */
+
+/* Custom Styles for Propensity Model App */
+
+:root {
+  --primary-color: #2c3e50;
+  --secondary-color: #3498db;
+  --success-color: #2ecc71;
+  --warning-color: #f1c40f;
+  --danger-color: #e74c3c;
+  --light-color: #ecf0f1;
+  --dark-color: #2c3e50;
+  --text-color: #2c3e50;
+  --text-muted: #7f8c8d;
+  --border-color: #e0e0e0;
+  --card-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --transition-speed: 0.3s;
+}
+
+/* Typography */
+body {
+  font-family: 'Poppins', sans-serif;
+  color: var(--text-color);
+  line-height: 1.6;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+/* Cards */
+.card {
+  border: none;
+  border-radius: 8px;
+  box-shadow: var(--card-shadow);
+  transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+  background-color: white;
+  border-bottom: 1px solid var(--border-color);
+  padding: 1rem 1.5rem;
+}
+
+/* Tables */
+.table {
+  margin-bottom: 0;
+}
+
+.table thead th {
+  background-color: var(--light-color);
+  border-bottom: 2px solid var(--border-color);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+}
+
+.table td {
+  vertical-align: middle;
+  padding: 1rem;
+}
+
+/* Badges */
+.badge {
+  padding: 0.5em 1em;
+  font-weight: 500;
+  border-radius: 4px;
+}
+
+.badge-soft-success {
+  background-color: rgba(46, 204, 113, 0.1);
+  color: var(--success-color);
+}
+
+.badge-soft-warning {
+  background-color: rgba(241, 196, 15, 0.1);
+  color: var(--warning-color);
+}
+
+.badge-soft-danger {
+  background-color: rgba(231, 76, 60, 0.1);
+  color: var(--danger-color);
+}
+
+/* Buttons */
+.btn {
+  font-weight: 500;
+  padding: 0.5rem 1.25rem;
+  border-radius: 4px;
+  transition: all var(--transition-speed);
+}
+
+.btn-primary {
+  background-color: var(--secondary-color);
+  border-color: var(--secondary-color);
+}
+
+.btn-primary:hover {
+  background-color: #2980b9;
+  border-color: #2980b9;
+}
+
+/* Dashboard Widgets */
+.crm-widget {
+  background-color: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.crm-widget h5 {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+.crm-widget h2 {
+  font-size: 1.75rem;
+  margin-bottom: 0;
+}
+
+/* Charts */
+.apex-charts {
+  margin-top: 1rem;
+}
+
+/* Next Steps Section */
+.next-steps-card {
+  background-color: var(--light-color);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 0.5rem;
+}
+
+.next-steps-card h6 {
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.next-steps-card .card {
+  background-color: white;
+  margin-bottom: 0.75rem;
+}
+
+/* Pagination */
+.pagination {
+  margin-top: 1.5rem;
+}
+
+.page-link {
+  color: var(--secondary-color);
+  border: 1px solid var(--border-color);
+  padding: 0.5rem 1rem;
+}
+
+.page-item.active .page-link {
+  background-color: var(--secondary-color);
+  border-color: var(--secondary-color);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .crm-widget {
+    padding: 1rem;
+  }
+  
+  .table-responsive {
+    margin-bottom: 1rem;
+  }
+  
+  .card-header {
+    padding: 0.75rem 1rem;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.fade-in {
+  animation: fadeIn var(--transition-speed) ease-in;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--light-color);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--text-muted);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-color);
+}
