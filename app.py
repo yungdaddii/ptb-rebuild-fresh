@@ -567,6 +567,7 @@ def generate_next_steps(opportunity):
 def opportunity_insights(opp_id):
     """Display detailed insights and recommendations for a specific opportunity."""
     try:
+        app.logger.info(f"Fetching opportunity details for ID: {opp_id}")
         query = f"""SELECT Id, Name, Amount, StageName, CloseDate, LastModifiedDate,
                    icp_fit__c, Engagement_Score__c, Intent_Data__c, Past_Success__c,
                    Total_Sales_Touches__c, Number_of_Meetings__c, Contacts_Associated__c,
@@ -581,15 +582,24 @@ def opportunity_insights(opp_id):
                    FROM Opportunity WHERE Id = '{opp_id}'"""
         
         result = sf.query(query)
+        app.logger.info(f"Query result: {result}")
+        
         if result['totalSize'] > 0:
             opportunity = result['records'][0]
+            app.logger.info(f"Found opportunity: {opportunity['Name']}")
+            
+            # Generate next steps
             opportunity['next_steps'] = generate_next_steps(opportunity)
+            app.logger.info(f"Generated next steps: {opportunity['next_steps']}")
+            
             return render_template('opportunity_insights.html', opportunity=opportunity)
         else:
+            app.logger.warning(f"Opportunity not found: {opp_id}")
             return "Opportunity not found", 404
     except Exception as e:
         app.logger.error(f"Error fetching opportunity {opp_id}: {str(e)}")
-        return "Error fetching opportunity details", 500
+        app.logger.error(f"Error details: {e.__class__.__name__}")
+        return f"Error fetching opportunity details: {str(e)}", 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
