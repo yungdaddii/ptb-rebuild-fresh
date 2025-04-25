@@ -1,0 +1,99 @@
+/* Opportunity Insights Page Styles */
+.timeline-item {
+    position: relative;
+    padding-left: 30px;
+    padding-bottom: 20px;
+}
+
+.timeline-item:before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 2px;
+    height: 100%;
+    background-color: #e9ecef;
+}
+
+.timeline-item:after {
+    content: '';
+    position: absolute;
+    left: -6px;
+    top: 0;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background-color: #0ab39c;
+}
+
+.recommendation-card {
+    transition: transform 0.2s;
+    margin-bottom: 1rem;
+}
+
+.recommendation-card:hover {
+    transform: translateY(-5px);
+}
+
+.priority-high {
+    border-left: 4px solid #f06548;
+}
+
+.priority-medium {
+    border-left: 4px solid #f7b84b;
+}
+
+.priority-low {
+    border-left: 4px solid #0ab39c;
+}
+
+.card {
+    box-shadow: 0 0.75rem 1.5rem rgba(18, 38, 63, 0.03);
+    margin-bottom: 1.5rem;
+}
+
+.card-header {
+    background-color: transparent;
+    border-bottom: 1px solid #f6f6f6;
+    padding: 1rem 1.25rem;
+}
+
+.card-body {
+    padding: 1.25rem;
+}
+
+.badge-soft-success {
+    color: #0ab39c;
+    background-color: rgba(10, 179, 156, 0.1);
+}
+
+.badge-soft-warning {
+    color: #f7b84b;
+    background-color: rgba(247, 184, 75, 0.1);
+}
+
+.badge-soft-info {
+    color: #299cdb;
+    background-color: rgba(41, 156, 219, 0.1);
+}
+
+.badge-soft-danger {
+    color: #f06548;
+    background-color: rgba(240, 101, 72, 0.1);
+}
+
+.avatar-xs {
+    height: 2rem;
+    width: 2rem;
+}
+
+.avatar-title {
+    align-items: center;
+    background-color: #299cdb;
+    color: #fff;
+    display: flex;
+    font-weight: 500;
+    height: 100%;
+    justify-content: center;
+    width: 100%;
+} 
