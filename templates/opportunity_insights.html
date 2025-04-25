@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+{% block title %}Opportunity Insights{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/opportunity-insights.css') }}">
+<style>
+    .timeline-item {
+        position: relative;
+        padding-left: 30px;
+        padding-bottom: 20px;
+    }
+    .timeline-item:before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 2px;
+        height: 100%;
+        background-color: #e9ecef;
+    }
+    .timeline-item:after {
+        content: '';
+        position: absolute;
+        left: -6px;
+        top: 0;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background-color: #0ab39c;
+    }
+    .recommendation-card {
+        transition: transform 0.2s;
+    }
+    .recommendation-card:hover {
+        transform: translateY(-5px);
+    }
+    .priority-high {
+        border-left: 4px solid #f06548;
+    }
+    .priority-medium {
+        border-left: 4px solid #f7b84b;
+    }
+    .priority-low {
+        border-left: 4px solid #0ab39c;
+    }
+</style>
+
+<div class="main-content">
+    <div class="page-content">
+        <div class="dashboard-wrapper">
+            <!-- Header -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+                        <h4 class="mb-sm-0">Opportunity Insights</h4>
+                        <div class="page-title-right">
+                            <ol class="breadcrumb m-0">
+                                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                                <li class="breadcrumb-item"><a href="/score_opps">Revenue Dashboard</a></li>
+                                <li class="breadcrumb-item active">Opportunity Insights</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Opportunity Summary Card -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h4 class="card-title mb-4">{{ opportunity['Name'] }}</h4>
+                                    <div class="table-responsive">
+                                        <table class="table table-borderless mb-0">
+                                            <tbody>
+                                                <tr>
+                                                    <th scope="row" style="width: 30%;">Stage</th>
+                                                    <td>{{ opportunity['StageName'] }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th scope="row">Amount</th>
+                                                    <td>${{ opportunity['Amount']|int|format_number }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th scope="row">Close Date</th>
+                                                    <td>{{ opportunity['CloseDate']|datetimeformat }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th scope="row">Propensity Score</th>
+                                                    <td>{{ opportunity['Propensity_Score__c']|round(2) }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th scope="row">Win Probability</th>
+                                                    <td>{{ opportunity['Win_Probability__c']|round(2) }}%</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex justify-content-end">
+                                        <span class="badge badge-soft-{% if opportunity['Priority_Level__c'] == 'Top Priority' %}success{% elif opportunity['Priority_Level__c'] == 'High Priority' %}warning{% elif opportunity['Priority_Level__c'] == 'Medium Priority' %}info{% else %}danger{% endif %} p-2 fs-14">
+                                            {{ opportunity['Priority_Level__c'] }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recommendations and Activity Timeline -->
+            <div class="row">
+                <!-- Recommendations -->
+                <div class="col-xl-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="card-title mb-0">Recommended Actions</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                {% for action in opportunity['next_steps'] %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="card recommendation-card priority-{{ action['priority'].lower() }}">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-center mb-3">
+                                                <i class="{{ action['icon'] }} fs-20 me-2"></i>
+                                                <h5 class="card-title mb-0">{{ action['action'] }}</h5>
+                                            </div>
+                                            <p class="card-text">{{ action['description'] }}</p>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="badge badge-soft-{% if action['priority'] == 'High' %}danger{% elif action['priority'] == 'Medium' %}warning{% else %}success{% endif %}">
+                                                    {{ action['priority'] }} Priority
+                                                </span>
+                                                <button class="btn btn-sm btn-primary">Take Action</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity Timeline -->
+                <div class="col-xl-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="card-title mb-0">Activity Timeline</h4>
+                        </div>
+                        <div class="card-body">
+                            {% if opportunity.get('ActivityHistories', {}).get('records', []) %}
+                                {% for activity in opportunity['ActivityHistories']['records'] %}
+                                <div class="timeline-item">
+                                    <h5 class="fs-14 mb-1">{{ activity['Type'] }}</h5>
+                                    <p class="text-muted mb-1">{{ activity['Subject'] }}</p>
+                                    <small class="text-muted">{{ activity['ActivityDate']|datetimeformat }}</small>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-muted">No recent activities</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Stakeholders -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h4 class="card-title mb-0">Key Stakeholders</h4>
+                        </div>
+                        <div class="card-body">
+                            {% if opportunity.get('OpportunityContactRoles', {}).get('records', []) %}
+                                {% for contact in opportunity['OpportunityContactRoles']['records'] %}
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="flex-shrink-0">
+                                        <div class="avatar-xs">
+                                            <span class="avatar-title rounded-circle bg-primary text-white">
+                                                {{ contact['Contact']['Name'][0] }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <h5 class="fs-14 mb-1">{{ contact['Contact']['Name'] }}</h5>
+                                        <p class="text-muted mb-0">{{ contact['Contact']['Title'] }}</p>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-muted">No contacts associated</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
