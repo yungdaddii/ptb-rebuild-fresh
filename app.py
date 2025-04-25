@@ -566,26 +566,30 @@ def generate_next_steps(opportunity):
 @app.route('/opportunity/<opp_id>')
 def opportunity_insights(opp_id):
     """Display detailed insights and recommendations for a specific opportunity."""
-    query = f"""SELECT Id, Name, Amount, StageName, CloseDate, LastModifiedDate,
-               icp_fit__c, Engagement_Score__c, Intent_Data__c, Past_Success__c,
-               Total_Sales_Touches__c, Number_of_Meetings__c, Contacts_Associated__c,
-               Budget_Defined__c, Need_Defined__c, Timeline_Defined__c,
-               Short_List_Defined__c, High_Intent__c,
-               Propensity_Score__c, Win_Probability__c, Priority_Level__c,
-               LastActivityDate, LastActivityType,
-               (SELECT Id, Name, Email, Title, Department FROM OpportunityContactRoles),
-               (SELECT Id, Subject, ActivityDate, Type, Description FROM ActivityHistories ORDER BY ActivityDate DESC LIMIT 5),
-               Next_Steps__c, Decision_Maker_Status__c, Competitor_Information__c,
-               Last_Email_Sent__c, Last_Call_Date__c, Last_Meeting_Date__c
-               FROM Opportunity WHERE Id = '{opp_id}'"""
-    
-    result = sf.query(query)
-    if result['totalSize'] > 0:
-        opportunity = result['records'][0]
-        opportunity['next_steps'] = generate_next_steps(opportunity)
-        return render_template('opportunity_insights.html', opportunity=opportunity)
-    else:
-        return "Opportunity not found", 404
+    try:
+        query = f"""SELECT Id, Name, Amount, StageName, CloseDate, LastModifiedDate,
+                   icp_fit__c, Engagement_Score__c, Intent_Data__c, Past_Success__c,
+                   Total_Sales_Touches__c, Number_of_Meetings__c, Contacts_Associated__c,
+                   Budget_Defined__c, Need_Defined__c, Timeline_Defined__c,
+                   Short_List_Defined__c, High_Intent__c,
+                   Propensity_Score__c, Win_Probability__c, Priority_Level__c,
+                   LastActivityDate,
+                   (SELECT Id, Name, Email, Title, Department FROM OpportunityContactRoles),
+                   (SELECT Id, Subject, ActivityDate, Type, Description FROM ActivityHistories ORDER BY ActivityDate DESC LIMIT 5),
+                   Next_Steps__c, Decision_Maker_Status__c, Competitor_Information__c,
+                   Last_Email_Sent__c, Last_Call_Date__c, Last_Meeting_Date__c
+                   FROM Opportunity WHERE Id = '{opp_id}'"""
+        
+        result = sf.query(query)
+        if result['totalSize'] > 0:
+            opportunity = result['records'][0]
+            opportunity['next_steps'] = generate_next_steps(opportunity)
+            return render_template('opportunity_insights.html', opportunity=opportunity)
+        else:
+            return "Opportunity not found", 404
+    except Exception as e:
+        app.logger.error(f"Error fetching opportunity {opp_id}: {str(e)}")
+        return "Error fetching opportunity details", 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
