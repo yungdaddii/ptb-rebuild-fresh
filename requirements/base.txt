@@ -1,0 +1,10 @@
+Flask==3.1.0
+gunicorn==23.0.0
+python-dotenv==1.0.1
+requests==2.32.3
+simple-salesforce==1.12.6
+flask-session==0.5.0
+sendgrid==6.11.0
+langchain==0.1.20
+langchain-openai==0.0.8
+openai==1.14.3 
